@@ -1,0 +1,11 @@
+- name: Test of vars prompt / Tower Survey
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - include_tasks: prompts.yml
+      when: awx_job_id is not defined
+
+    - debug:
+        var: dns_server
+  
