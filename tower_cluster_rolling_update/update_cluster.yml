@@ -1,0 +1,80 @@
+---
+- name: Pull all instances
+  hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Pull Instances from API
+    uri:
+      url: https://localhost/api/v2/instances/
+      method: GET
+      user: "{{ tower_username }}"
+      password: "{{ tower_password }}"
+      validate_certs: False
+      force_basic_auth: yes
+      status_code: 200
+    register: instances
+
+  - name: Add Instances as Hosts
+    add_host:
+      name: "{{ item.hostname }}"
+      group: tower
+      instance_id: "{{ item.id }}"
+    loop: "{{ instances.json.results }}"
+    when: "'isolated' not in item.hostname"
+
+- name: Update Cluster servers individually
+  hosts: tower
+  serial: 1
+  tasks:
+  - name: Disable Instance in Tower API
+    uri:
+      url: https://{{ ansible_hostname }}/api/v2/instances/{{ instance_id }}/
+      method: PATCH
+      user: "{{ tower_username }}"
+      password: "{{ tower_password }}"
+      body:
+        enabled: false
+      body_format: json
+      validate_certs: False
+      force_basic_auth: yes
+      status_code: 200
+    delegate_to: 127.0.0.1
+
+  - name: Wait for Jobs to Complete
+    uri:
+      url: https://{{ ansible_hostname }}/api/v2/instances/{{ instance_id }}/
+      method: GET
+      user: "{{ tower_username }}"
+      password: "{{ tower_password }}"
+      validate_certs: False
+      force_basic_auth: yes
+      status_code: 200
+    register: job
+    until: job.json.jobs_running == 0
+    retries: 100
+    delay: 5
+    delegate_to: 127.0.0.1
+
+
+  - name: Update Packages
+    yum:
+      name: "*"
+      state: latest
+      exclude: kernel*
+    register: updates
+
+  - name: Enable Instance in Tower API
+    uri:
+      url: https://{{ ansible_hostname }}/api/v2/instances/{{ instance_id }}/
+      method: PATCH
+      user: "{{ tower_username }}"
+      password: "{{ tower_password }}"
+      body:
+        enabled: true
+      body_format: json
+      validate_certs: False
+      force_basic_auth: yes
+      status_code: 200
+    delegate_to: 127.0.0.1
+
+
