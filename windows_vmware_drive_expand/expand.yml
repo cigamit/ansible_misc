@@ -1,0 +1,62 @@
+---
+- name: Check Windows C Drive and Expand if Utilization > 75%
+  hosts: all
+  tasks:
+
+    - name: Check that we are Windows
+      assert:
+        that: "ansible_os_family == 'Windows'"
+
+    - name: Gather Windows Drive Percentage
+      win_shell: Get-Volume -DriveLetter C | Select @{ Label=”PercentFree”; Expression={ 100 * ($_.SizeRemaining / $_.Size) }} | ft -hide
+      register: f
+      changed_when: false
+
+    - name: Set FreeSpace Fact
+      set_fact:
+        fs: "{{ f.stdout | trim | int }}"
+
+    - debug:
+        msg: "Disk Space Free: {{ fs }}%"
+
+    - block:
+      - name: Gather VMWare disk facts about VM
+        vmware_guest_disk_facts:
+          datacenter: "{{ vCenterDatacenter }}"
+          validate_certs: no
+          name: "{{ inventory_hostname }}"
+        register: disk_facts
+        delegate_to: localhost
+
+      - debug:
+          msg:
+            - "Old Size: {{ (disk_facts.guest_disk_facts['0'].capacity_in_kb|int / 1024 / 1024)|int }} Gb"
+            - "New Size: {{ (disk_facts.guest_disk_facts['0'].capacity_in_kb|int / 1024 / 1024 * 1.25)|int }} Gb"
+
+      - name: Create vmware_guest module compatible disk list
+        set_fact:
+          disks: "{% set output = [] %}\
+            {% for d in disk_facts.guest_disk_facts|sort %}\
+              {%- if loop.first -%}\
+                  {{ output.append({'size_kb' : disk_facts.guest_disk_facts[d].capacity_in_kb|int * 1.25 }) }}\
+              {%- else -%}
+                  {{ output.append({'size_kb' : disk_facts.guest_disk_facts[d].capacity_in_kb }) }}\
+              {%- endif -%}
+            {% endfor %}\
+            {{ output }}"
+
+      - name: Expand Disk in VMWare
+        vmware_guest:
+          datacenter: "{{ vCenterDatacenter }}"
+          cluster: "{{ vCenterCluster }}"
+          folder: "/{{ vCenterFolder }}"
+          name: "{{ inventory_hostname }}"
+          state: present
+          validate_certs: False
+          disk: "{{ disks }}"
+        delegate_to: localhost
+
+      - name: Expand Local Windows Disk
+        win_shell: Update-HostStorageCache; $MaxSize = (Get-PartitionSupportedSize -DriveLetter c).sizeMax; Resize-Partition -DriveLetter c -Size $MaxSize
+
+      when: fs|int < 25
