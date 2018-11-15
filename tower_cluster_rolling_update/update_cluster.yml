@@ -55,13 +55,22 @@
     delay: 5
     delegate_to: 127.0.0.1
 
-
   - name: Update Packages
     yum:
       name: "*"
       state: latest
       exclude: kernel*
     register: updates
+
+  - name: Update Kernel Packages
+    yum:
+      name: "kernel"
+      state: latest
+    register: kernel_updates
+    
+  - name: Reboot if necessary
+    reboot:
+    when: kernel_updates.changed
 
   - name: Enable Instance in Tower API
     uri:
