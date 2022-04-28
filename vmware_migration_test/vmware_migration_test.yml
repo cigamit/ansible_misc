@@ -1,0 +1,82 @@
+- name: VMWare Functionality test
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    vCenterDatacenter: MNS
+    vCenterCluster: MNS
+    vCenterFolder: /POC/
+    vm_name: MigrationTest
+    vCenterCloneSource: CentOS8v
+    VCenterCloneSnapshot: Linked
+    vCenterPortGroup: Tower
+    VMIpAddress: 10.0.110.250
+    VMSubnetMask: 255.255.255.0
+    VMGateway: 10.0.110.1
+    dns_server1: 10.0.110.1
+    esxi_host1: mns01.lab.rhlabs.net
+    esxi_host2: mns02.lab.rhlabs.net
+    storage1: SSD
+    storage2: ISO
+  tasks:
+    - name: Clone template or virtual machine and customize
+      vmware_guest:
+        datacenter: "{{ vCenterDatacenter }}"
+        cluster: "{{ vCenterCluster }}"
+        folder: "/{{ vCenterFolder }}"
+        name: "{{ vm_name }}"
+        template: "{{ vCenterCloneSource }}"
+        snapshot_src: "{{ VCenterCloneSnapshot }}"
+        linked_clone: True
+        state: poweredon
+        wait_for_ip_address: true
+        validate_certs: False
+        networks:
+        - name: "{{ vCenterPortGroup }}"
+          ip: "{{ VMIpAddress }}"
+          netmask: "{{ VMSubnetMask }}"
+          gateway: "{{ VMGateway }}"
+          dns_servers:
+          - "{{ dns_server1 }}"
+      register: newvm
+      delegate_to: localhost
+
+    - name: Wait until network is working
+      wait_for:
+        host: "{{ VMIpAddress }}"
+        port: 22
+        delay: 20
+        timeout: 600
+      when: newvm.changed
+      delegate_to: localhost
+
+    - name: Gather cluster info from given datacenter
+      vmware_cluster_info:
+        datacenter: "{{ vCenterDatacenter }}"
+        validate_certs: no
+      delegate_to: localhost
+      register: cluster_info
+
+    - name: Perform Host vMotion of virtual machine
+      vmware_vmotion:
+        vm_name: "{{ vm_name }}"
+        destination_host: "{% if newvm.instance.hw_esxi_host != esxi_host1 %}{{ esxi_host1 }}{% else %}{{ esxi_host2 }}{% endif %}"
+        validate_certs: no
+
+    - name: Perform Storage vMotion of virtual machine
+      vmware_vmotion:
+        vm_name: "{{ vm_name }}"
+        destination_datastore: "{% if newvm.instance.hw_datastores[0] != storage1 %}{{ storage1 }}{% else %}{{ storage2 }}{% endif %}"
+        validate_certs: no
+
+    - name: Destroy the VM
+      vmware_guest:
+        datacenter: "{{ vCenterDatacenter }}"
+        cluster: "{{ vCenterCluster }}"
+        folder: "/{{ vCenterFolder }}"
+        name: "{{ vm_name }}"
+        state: absent
+        force: true
+        validate_certs: False
+      delegate_to: localhost
+
