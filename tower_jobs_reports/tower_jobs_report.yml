@@ -46,7 +46,7 @@
 
     - name: Loop over the job pages backwards
       include_tasks: tasks/aap_jobs.yml
-      loop: "{{ range(pages|int, start|int, -1) | list }}"
+      loop: "{{ range(start|int, pages|int) | list }}"
       loop_control:
         loop_var: page
 
