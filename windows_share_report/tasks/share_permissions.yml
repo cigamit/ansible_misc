@@ -46,6 +46,6 @@
 
 - name: Render the Host Report Template
   template: 
-    src: "templates/shares.csv.j2" 
+    src: "../templates/shares.csv.j2" 
     dest: "{{ playbook_dir }}/reports/fragments/{{ inventory_hostname }}-{{ share.Name }}.csv"
   delegate_to: localhost
