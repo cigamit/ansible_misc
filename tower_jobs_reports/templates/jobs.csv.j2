@@ -1,0 +1,3 @@
+{% for job in jobs.json.results %}
+{{ job.name}},{{ job.started }},{{ job.finished }},{{ job.elapsed }},{{ job.summary_fields.created_by.username|default('') }},{{ job.job_type }},{{ job.summary_fields.inventory.name|default('') }},{{ job.limit }}
+{% endfor %}
