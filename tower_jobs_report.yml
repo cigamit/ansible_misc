@@ -1,0 +1,72 @@
+- name: Create Report
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    max: 50
+  pre_tasks:
+    - name: Ensure Reports directories exist
+      file:
+         state: directory
+         path: "{{ playbook_dir }}/reports/fragments/"
+      delegate_to: localhost
+      run_once: true 
+ 
+    - name: Ensure fragments directory is empty
+      file:
+         state: absent
+         path: "{{ playbook_dir }}/reports/fragments/*"
+      delegate_to: localhost
+      run_once: true 
+ 
+  tasks:
+    - name: Get AAP Job Count
+      uri:
+        url: "https://localhost/api/v2/jobs/"
+        user: "{{ tower_username }}"
+        password: "{{ tower_password }}"
+        method: GET
+        validate_certs: false
+        force_basic_auth: true
+        status_code:
+        - 200
+        - 201
+        - 204
+      changed_when: false
+      register: aap_jobs_count
+
+    - name: Set Page Count
+      set_fact:
+        pages: "{{ ((aap_jobs_count.json.count/25)|int)+1 }}"
+
+    - name: Set Start Page Count
+      set_fact:
+        start: "{{ 1 if pages < max else ((pages|int) - (max|int)) }}"
+
+    - name: Loop over the job pages backwards
+      include_tasks: tasks/aap_jobs.yml
+      loop: "{{ range(pages|int, start|int, -1) | list }}"
+      loop_control:
+        loop_var: page
+
+  post_tasks:
+    - name: Concat all the csv files 
+      assemble: 
+        src: "{{ playbook_dir }}/reports/fragments/"
+        dest: "{{ playbook_dir }}/reports/updates.csv"
+      delegate_to: localhost
+      run_once: true 
+ 
+    - name: Append the header to the csv file 
+      lineinfile: 
+        dest: "{{ playbook_dir }}/reports/updates.csv"
+        insertbefore: BOF 
+        line: "Name,Started,Finished,Elapsed,Username,Job Type,Inventory,Limit" 
+      delegate_to: localhost
+      run_once: true
+ 
+    - name: Display Report
+      debug: var=item
+      with_file:
+          - "{{ playbook_dir }}/reports/updates.csv"
+ 
