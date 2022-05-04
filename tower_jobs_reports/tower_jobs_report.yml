@@ -4,6 +4,7 @@
   gather_facts: no
   vars:
     max: 50
+
   pre_tasks:
     - name: Ensure Reports directories exist
       file:
@@ -53,13 +54,13 @@
     - name: Concat all the csv files 
       assemble: 
         src: "{{ playbook_dir }}/reports/fragments/"
-        dest: "{{ playbook_dir }}/reports/updates.csv"
+        dest: "{{ playbook_dir }}/reports/jobs.csv"
       delegate_to: localhost
       run_once: true 
  
     - name: Append the header to the csv file 
       lineinfile: 
-        dest: "{{ playbook_dir }}/reports/updates.csv"
+        dest: "{{ playbook_dir }}/reports/jobs.csv"
         insertbefore: BOF 
         line: "Name,Started,Finished,Elapsed,Username,Job Type,Inventory,Limit" 
       delegate_to: localhost
@@ -68,5 +69,5 @@
     - name: Display Report
       debug: var=item
       with_file:
-          - "{{ playbook_dir }}/reports/updates.csv"
+          - "{{ playbook_dir }}/reports/jobs.csv"
  
