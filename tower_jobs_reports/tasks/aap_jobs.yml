@@ -1,0 +1,19 @@
+- name: Get AAP Job Count
+  uri:
+    url: "https://localhost/api/v2/jobs/?page={{ page }}"
+    user: "{{ tower_username }}"
+    password: "{{ tower_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: true
+    status_code:
+    - 200
+    - 201
+    - 204
+  changed_when: false
+  register: jobs
+
+- name: Render the Host Report Template
+  template: 
+    src: "templates/jobs.csv.j2" 
+    dest: "{{ playbook_dir }}/reports/fragments/page-{{ page }}.csv"
