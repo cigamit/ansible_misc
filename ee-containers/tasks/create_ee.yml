@@ -1,0 +1,136 @@
+- name: Create remote directory
+  ansible.builtin.file:
+    path: "{{ remote_path }}/{{ ee }}/"
+    state: directory
+
+- name: Copy the EE files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/build_files/{{ ee }}/"
+    dest: "{{ remote_path }}/{{ ee }}/"
+
+- name: Include the EE file as variables
+  include_vars:
+    file: "{{ path_ee }}/{{ ee }}/execution-environment.yml"
+    name: inc_vars
+
+- name: Setup some base variables
+  ansible.builtin.set_fact:
+    base_ee: "{{ inc_vars.build_arg_defaults.EE_BASE_IMAGE }}"
+    new_ee_ver: "{{ inc_vars.version }}"
+
+- name: Grab the list of EEs to ensure the correct EE exists
+  ansible.builtin.shell: podman image list
+  changed_when: false
+  register: ee_list
+
+- name: Install the required base EE if not already present
+  when: ee_list.stdout_lines is not search((base_ee|split(':'))[0])
+  ansible.builtin.shell: "podman pull --creds={{ ee_username }}:{{ ee_password }} {{ inc_vars.build_arg_defaults.EE_BASE_IMAGE }}"
+  no_log: true
+
+- name: Run the build on the selected new EE
+  ansible.builtin.shell: "ansible-builder build --tag {{ ee }}"
+  args:
+    chdir: "{{ remote_path }}/{{ ee }}"
+  register: ee_build_out
+  failed_when: ee_build_out.stdout_lines is not search('Complete!')
+
+- name: Push EE to container registry
+  ansible.builtin.shell: "podman push --creds={{ ee_username }}:{{ ee_password }} localhost/{{ ee }}:latest docker://{{ pah_host }}/{{ ee }}:{{ new_ee_ver }} --tls-verify=false"
+  args:
+    chdir: "{{ remote_path }}/{{ ee }}"
+  register: pah_push_out
+  no_log: true
+  failed_when: pah_push_out.stderr_lines is not search('Storing signatures')
+
+- name: Collect credentials
+  uri:
+    url: "https://{{ inventory_hostname }}/api/v2/credentials/?name={{ pah_cred | replace(' ', '%20') }}"
+    user: "{{ ee_username }}"
+    password: "{{ ee_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: true
+    status_code:
+      - 200
+      - 201
+      - 204
+  changed_when: false
+  register: aap_cred_out
+
+- name: Set ansible credential name to ID
+  when: item.name == pah_cred
+  ansible.builtin.set_fact:
+    pah_cred_id: "{{ item.id }}"
+  loop: "{{ aap_cred_out.json.results }}"
+
+- name: Collect EEs to check if it already exists
+  uri:
+    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/?name={{ ee | replace(' ', '%20') }}"
+    user: "{{ ee_username }}"
+    password: "{{ ee_password }}"
+    method: GET
+    validate_certs: false
+    force_basic_auth: true
+    status_code:
+      - 200
+      - 201
+      - 204
+  changed_when: false
+  register: aap_ee_out
+
+- name: Set ansible ee id if name already exists
+  when: item.name == ee
+  ansible.builtin.set_fact:
+    new_ee_id: "{{ item.id }}"
+  loop: "{{ aap_ee_out.json.results }}"
+
+- name: Configure AAP for new EE
+  when: new_ee_id is undefined
+  uri:
+    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/"
+    user: "{{ ee_username }}"
+    password: "{{ ee_password }}"
+    method: POST
+    validate_certs: false
+    force_basic_auth: true
+    body_format: json
+    body: |
+        {
+            "name": "{{ ee }}",
+            "image": "{{ pah_host }}/{{ ee }}:{{ new_ee_ver }}",
+            "description": "added by automation",
+            "pull": "missing",
+            "credential": "{{ pah_cred_id }}"
+        }
+    status_code:
+      - 200
+      - 201
+      - 204
+  failed_when: aap_conf_out.status != 201 and aap_conf_out.json.name is not search('already exists')
+  register: aap_conf_out
+
+- name: If EE already exists on AAP, update version number
+  when: new_ee_id is defined
+  uri:
+    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/{{ new_ee_id }}/"
+    user: "{{ ee_username }}"
+    password: "{{ ee_password }}"
+    method: PUT
+    validate_certs: false
+    force_basic_auth: true
+    body_format: json
+    body: |
+        {
+            "name": "{{ ee }}",
+            "image": "{{ pah_host }}/{{ ee }}:{{ new_ee_ver }}",
+            "description": "added by automation",
+            "pull": "missing",
+            "credential": "{{ pah_cred_id }}"
+        }
+    status_code:
+      - 200
+      - 201
+      - 204
+
+  
