@@ -1,0 +1,3 @@
+execution_envs:
+  - vmware_ee_supported
+  - tigerlab_ee_supported
