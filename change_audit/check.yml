@@ -1,12 +1,13 @@
 ---
 - name: Check previous job for change entries
   hosts: localhost
+  vars: 
+    tower_server: 10.1.10.44
   tasks:
 
     - name: Get the Job ID for the first playbook run
       uri:
-        url: https://10.1.10.44/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
-
+        url: https://{{ tower_server }}/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
         method: GET
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
@@ -15,11 +16,24 @@
         force_basic_auth: yes
         status_code:
           - 200
-          - 204
-          - 400
       register: response
-      changed_when: response.status == 200
 
     - name: display job var
-      debug:
-        var: response.json.results[0].summary_fields.job.id
+      set_fact:
+        job: "{{ response.json.results[0].summary_fields.job.id }}"
+
+    - name: Get the Job Results for the first playbook run
+      uri:
+        url: https://{{ tower_server }}/api/v2/jobs/{{ job }}/job_events/
+        method: GET
+        user: "{{ tower_username }}"
+        password: "{{ tower_password }}"
+        body_format: json
+        validate_certs: False
+        force_basic_auth: yes
+        status_code:
+          - 200
+      register: jdata
+
+    - debug:
+        var: jdata
