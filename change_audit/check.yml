@@ -44,13 +44,13 @@
     # Not completely necessary, but I am going to loop through and pre-check whether we have made a change
     # and if so, we will proceed with creating the template, emailing it out, etc...
     - set_fact:
-        job_changed: "{%- set changed = false -%}\
+        job_changed: "{%- set changed = namespace(v=false) -%}\
                       {%- for c in jdata.json.results -%}\
                         {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
-                          {%- set changed = true -%}\
+                          {%- set changed.v = true -%}\
                         {%- endif -%}\
                       {% -endfor -%}\
-                      {{- changed -}}"
+                      {{- changed.v -}}"
 
     - name: Create report of changes
       template:
