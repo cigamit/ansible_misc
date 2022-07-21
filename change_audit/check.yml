@@ -5,10 +5,19 @@
     tower_server: 10.1.10.44
   tasks:
 
+    # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
+    - name: Precheck
+      ansible.builtin.assert:
+        that:
+          - tower_workflow_job_id is defined
+          - tower_workflow_job_id > 0
+      fail_msg: "This playbook must be ran from a workflow within Controller"
+
+
     # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
     # So we will use that to get the Template jobs that are associated with it
     - name: Get the Job ID for the first playbook run
-      uri:
+      ansible.builtin.uri:
         url: https://{{ tower_server }}/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
         method: GET
         user: "{{ tower_username }}"
@@ -22,7 +31,7 @@
 
     # Now that we have the Job ID of the first job of the workflow, we need to grab the job events of that job
     - name: Get the Job Results for the first playbook run
-      uri:
+      ansible.builtin.uri:
         url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/
         method: GET
         user: "{{ tower_username }}"
@@ -36,7 +45,7 @@
 
     # Now that we have the Job Events, we will do a quick peek through them to see if we made any changes
     # There is no reason to try and build a report if no changes where made
-    - set_fact:
+    - ansible.builtin.set_fact:
         job_changed: "{%- set changed = namespace(v=false) -%}\
                       {%- for c in jdata.json.results -%}\
                         {%- if c.event == 'runner_on_ok' and c.changed -%}\
@@ -47,7 +56,7 @@
 
     # Display a quick message if we didn't detect any changes.  That way they aren't wondering if the job
     # didn't complete, etc.. 
-    - debug: 
+    - ansible.builtin.debug: 
         msg: No Changes were detected
       when: not job_changed
 
@@ -56,12 +65,12 @@
       block:
 
       - name: Create report of changes
-        template:
+        ansible.builtin.template:
           src: templates/changes.csv.j2
           dest: changes.csv 
 
       - name: Display the Results
-        debug:
+        ansible.builtin.debug:
           msg: "{{ lookup('file', 'changes.csv') }}"
 
       # From here you can add more data to the template and email it out etc...
