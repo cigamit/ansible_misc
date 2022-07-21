@@ -48,7 +48,7 @@
                         {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
                           {%- set changed.v = true -%}\
                         {%- endif -%}\
-                      {% -endfor -%}\
+                      {%- endfor -%}\
                       {{- changed.v -}}"
     - block:
       when: job_changed
