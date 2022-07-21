@@ -41,13 +41,13 @@
         var: jdata
 
     - set_fact:
-      job_changed: "{% set changed = false %}\
-                    {% for c in jdata.json.results %}\
-                      {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
-                        {% set changed = true %}\
-                      {% endif %}\
-                    {% endfor %}\
-                    {{ changed }}"
+        job_changed: "{% set changed = false %}\
+                      {% for c in jdata.json.results %}\
+                       {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
+                         {% set changed = true %}\
+                       {% endif %}\
+                     {% endfor %}\
+                      {{ changed }}"
 
     - name: Create report of changes
       template:
