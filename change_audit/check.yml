@@ -40,17 +40,24 @@
     - debug:
         var: jdata
 
+
+    # Not completely necessary, but I am going to loop through and pre-check whether we have made a change
+    # and if so, we will proceed with creating the template, emailing it out, etc...
     - set_fact:
         job_changed: "{% set changed = false %}\
                       {% for c in jdata.json.results %}\
-                       {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
-                         {% set changed = true %}\
-                       {% endif %}\
-                     {% endfor %}\
+                        {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
+                          {% set changed = true %}\
+                        {% endif %}\
+                      {% endfor %}\
                       {{ changed }}"
 
     - name: Create report of changes
       template:
         src: templates/changes.csv.j2
         dest: changes.csv 
-      when: job_changed
+      #when: job_changed
+
+    - name: Display the Results
+      debug:
+        msg: "{{ lookup('file', 'changes.csv') }}"
