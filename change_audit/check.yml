@@ -24,6 +24,6 @@
       register: response
       changed_when: response.status == 200
 
-    - name: display vars
+    - name: display job var
       debug:
-        var: response
+        var: response.results[0].summary_fields.job.id
