@@ -1,6 +1,7 @@
+Server,Task
 {% for c in jdata.json.results %}
-{{ c.task }}
+
     {%- if c.event == "playbook_on_task_start" and c.changed -%}
-- Changed
+{{c.host_name}},{{ c.task }}
     {%- endif -%}
 {% endfor %}
