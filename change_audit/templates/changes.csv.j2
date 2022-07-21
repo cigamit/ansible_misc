@@ -1,4 +1,4 @@
-Server,Task
+Server,Playbook,Task,Module,Change
 {% for c in jdata.json.results %}{% if c.event == "runner_on_ok" and c.changed %}
-{{c.host_name}},{{ c.task }}
+{{c.host_name}},{{ c.playbook }},{{ c.task }},{{ c.resolved_action }},{{ c.event_data.res | to_nice_yaml | replace ("\n", ",") }}
 {% endif %}{% endfor %}
