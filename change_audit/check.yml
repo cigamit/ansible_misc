@@ -37,15 +37,12 @@
           - 200
       register: jdata
 
-    - debug:
-        var: jdata
-
     # Not completely necessary, but I am going to loop through and pre-check whether we have made a change
     # and if so, we will proceed with creating the template, emailing it out, etc...
     - set_fact:
         job_changed: "{%- set changed = namespace(v=false) -%}\
                       {%- for c in jdata.json.results -%}\
-                        {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
+                        {%- if c.event == 'runner_on_ok' and c.changed -%}\
                           {%- set changed.v = true -%}\
                         {%- endif -%}\
                       {%- endfor -%}\
