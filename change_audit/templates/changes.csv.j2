@@ -1,6 +1,4 @@
 Server,Task
-{% for c in jdata.json.results %}
-    {% if c.event == "runner_on_ok" and c.changed %}
+{% for c in jdata.json.results %}{% if c.event == "runner_on_ok" and c.changed %}
 {{c.host_name}},{{ c.task }}
-    {% endif %}
-{% endfor %}
+{% endif %}{% endfor %}
