@@ -5,4 +5,26 @@
 
     - name: display vars
       debug:
-        var: vars
+        var: tower_workflow_job_id
+
+
+    - name: Get the Job ID for the first playbook run
+      uri:
+        url: https://10.1.10.44/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
+
+        method: GET
+        user: "{{ tower_username }}"
+        password: "{{ tower_password }}"
+        body_format: json
+        validate_certs: False
+        force_basic_auth: yes
+        status_code:
+          - 200
+          - 204
+          - 400
+      register: response
+      changed_when: response.status == 200
+
+    - name: display vars
+      debug:
+        var: response
