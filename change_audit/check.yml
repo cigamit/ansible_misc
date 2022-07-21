@@ -64,6 +64,8 @@
     - when: job_changed
       block:
 
+      # While I am creating a CSV file, it seems like it would be better to create an HTML file as
+      # we can get more creative with the DIFF display
       - name: Create report of changes
         ansible.builtin.template:
           src: templates/changes.csv.j2
