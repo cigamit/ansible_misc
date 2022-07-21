@@ -20,10 +20,7 @@
           - 200
       register: response
 
-    - name: display job var
-      set_fact:
-        job: "{{ response.json.results[0].summary_fields.job.id }}"
-
+    # Now that we have the Job ID of the first job of the workflow, we need to grab the job events of that job
     - name: Get the Job Results for the first playbook run
       uri:
         url: https://{{ tower_server }}/api/v2/jobs/{{ job }}/job_events/
@@ -37,8 +34,8 @@
           - 200
       register: jdata
 
-    # Not completely necessary, but I am going to loop through and pre-check whether we have made a change
-    # and if so, we will proceed with creating the template, emailing it out, etc...
+    # Now that we have the Job Events, we will do a quick peek through them to see if we made any changes
+    # There is no reason to try and build a report if no changes where made
     - set_fact:
         job_changed: "{%- set changed = namespace(v=false) -%}\
                       {%- for c in jdata.json.results -%}\
@@ -48,6 +45,13 @@
                       {%- endfor -%}\
                       {{- changed.v -}}"
 
+    # Display a quick message if we didn't detect any changes.  That way they aren't wondering if the job
+    # didn't complete, etc.. 
+    - debug: 
+        msg: No Changes were detected
+      when: not job_changed
+
+    # From here, we only continue if a change was actually made on the previous playbook
     - when: job_changed
       block:
 
@@ -55,8 +59,9 @@
         template:
           src: templates/changes.csv.j2
           dest: changes.csv 
-        #when: job_changed
 
       - name: Display the Results
         debug:
           msg: "{{ lookup('file', 'changes.csv') }}"
+
+      # From here you can add more data to the template and email it out etc...
