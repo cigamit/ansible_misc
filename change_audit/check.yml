@@ -1,0 +1,8 @@
+---
+- name: Check previous job for change entries
+  hosts: localhost
+  tasks:
+
+    - name: display vars
+      debug:
+        var: vars
