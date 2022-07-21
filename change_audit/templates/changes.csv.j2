@@ -1,4 +1,4 @@
 Server,Playbook,Task,Module,Change
 {% for c in jdata.json.results %}{% if c.event == "runner_on_ok" and c.changed %}
-{{c.host_name}},{{ c.playbook }},{{ c.task }},{{ c.event_data.resolved_action }},{{ c.event_data.res | to_nice_yaml | replace ("\n", ",") }}
+{{c.host_name}},{{ c.playbook }},{{ c.task }},{{ c.event_data.resolved_action }},{{ c.event_data.res.diff | to_nice_yaml | replace ("\n", "") }}
 {% endif %}{% endfor %}
