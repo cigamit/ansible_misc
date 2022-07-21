@@ -2,7 +2,7 @@
 - name: Check previous job for change entries
   hosts: localhost
   vars: 
-    tower_server: 10.1.10.44
+    tower_server: mytowerserver
   tasks:
 
     # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
