@@ -11,7 +11,7 @@
         that:
           - tower_workflow_job_id is defined
           - tower_workflow_job_id > 0
-      fail_msg: "This playbook must be ran from a workflow within Controller"
+        fail_msg: "This playbook must be ran from a workflow within Controller"
 
 
     # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
