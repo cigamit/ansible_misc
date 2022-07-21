@@ -3,10 +3,6 @@
   hosts: localhost
   tasks:
 
-    - name: display vars
-      debug:
-        var: tower_workflow_job_id
-
     - name: Get the Job ID for the first playbook run
       uri:
         url: https://10.1.10.44/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
@@ -26,4 +22,4 @@
 
     - name: display job var
       debug:
-        var: response.results[0].summary_fields.job.id
+        var: response.json.results[0].summary_fields.job.id
