@@ -50,8 +50,9 @@
                         {%- endif -%}\
                       {%- endfor -%}\
                       {{- changed.v -}}"
-    - block:
-      when: job_changed
+
+    - when: job_changed
+      block:
 
       - name: Create report of changes
         template:
