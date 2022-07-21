@@ -5,6 +5,8 @@
     tower_server: 10.1.10.44
   tasks:
 
+    # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
+    # So we will use that to get the Template jobs that are associated with it
     - name: Get the Job ID for the first playbook run
       uri:
         url: https://{{ tower_server }}/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
@@ -37,3 +39,18 @@
 
     - debug:
         var: jdata
+
+    - set_fact:
+      job_changed: "{% set changed = false %}\
+                    {% for c in jdata.json.results %}\
+                      {%- if c.event == 'playbook_on_task_start' and c.changed -%}\
+                        {% set changed = true %}\
+                      {% endif %}\
+                    {% endfor %}\
+                    {{ changed }}"
+
+    - name: Create report of changes
+      template:
+        src: templates/changes.csv.j2
+        dest: changes.csv 
+      when: job_changed

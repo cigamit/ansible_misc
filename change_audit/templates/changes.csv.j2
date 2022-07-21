@@ -1,0 +1,5 @@
+{% for c in jdata.json.results %}
+    {%- if c.event == "playbook_on_task_start" and c.changed -%}
+{{ c.task }}
+    {%- endif -%}
+{% endfor %}
