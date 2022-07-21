@@ -1,0 +1,20 @@
+- name: Sample Playbook that pretends to make some changes
+  hosts: localhost
+  gather_facts: no
+  tasks:
+
+    - name: Touch a file
+      file:
+        path: myfile.conf
+        state: touch
+
+    - name: Touch a file 2
+      file:
+        path: myfile2.conf
+        state: touch
+      changed_when: false
+
+    - name: Touch a file 3
+      file:
+        path: myfile3.conf
+        state: touch
