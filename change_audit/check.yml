@@ -7,7 +7,6 @@
       debug:
         var: tower_workflow_job_id
 
-
     - name: Get the Job ID for the first playbook run
       uri:
         url: https://10.1.10.44/api/v2/workflow_jobs/{{ tower_workflow_job_id }}/workflow_nodes/
