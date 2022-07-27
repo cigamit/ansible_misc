@@ -5,4 +5,5 @@
   tasks:
 
     - set_stats:
-        myvariable: "Test"
+        data:
+          myvariable: "Test"
