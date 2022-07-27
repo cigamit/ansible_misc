@@ -4,8 +4,7 @@
   gather_facts: false
   vars:
     extra_vars:
-      test: "{{ test }}"
-      app: "{{ app }}"
+      test: "Test"
     apps:
       - Test1
       - Test2
