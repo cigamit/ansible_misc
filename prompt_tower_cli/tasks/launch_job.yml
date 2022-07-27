@@ -20,5 +20,5 @@
   
 - name: Save artifacts
   set_fact:
-    extra_vars: "{{ extra_vars | combine(jdata.artifacts) }}"
-  when: jdata.artifacts is defined
+    extra_vars: "{{ extra_vars | combine(jdata.json.artifacts) }}"
+  when: jdata.json.artifacts is defined
