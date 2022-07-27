@@ -2,10 +2,19 @@
   hosts: localhost
   connection: local
   gather_facts: false
+  vars:
+    test: test
+    apps:
+      - Test1
+      - Test2
   tasks:
     - name: Call our job
-      awx.awx.job_launch:
-        name: Set Stat
-        wait: yes
-      register: job
+      include_tasks: tasks/launch_job.yml
+      vars:
+        extra_vars:
+          test: "{{ test }}"
+          app: "{{ app }}"
+      loop: "{{ apps }}"
+      loop_control:
+        loop_var: app
       
