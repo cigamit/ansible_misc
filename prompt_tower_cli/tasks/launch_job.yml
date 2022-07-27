@@ -1,6 +1,7 @@
 - name: Call our job
   awx.awx.job_launch:
     name: Set Stat
+    extra_vars: "{{ extra_vars }}"
     wait: yes
   register: job
 
