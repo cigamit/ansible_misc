@@ -3,8 +3,9 @@
   connection: local
   gather_facts: false
   tasks:
-    - awx.awx.job_launch:
-        template: Set Stat
+    - name: Call our job
+      awx.awx.job_launch:
+        name: Set Stat
         wait: yes
       register: job
       
