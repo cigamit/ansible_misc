@@ -1,0 +1,23 @@
+- name: Call our job
+  awx.awx.job_launch:
+    name: Set Stat
+    wait: yes
+  register: job
+
+- name: Get the Job Results
+  ansible.builtin.uri:
+    url: https://{{ lookup('env', 'CONTROLLER_HOST') }}/api/v2/jobs/{{ job.id }}/
+    method: GET
+    user: "{{ lookup('env', 'CONTROLLER_USERNAME') }}"
+    password: "{{ lookup('env', 'CONTROLLER_PASSWORD') }}"
+    body_format: json
+    validate_certs: False
+    force_basic_auth: yes
+    status_code:
+      - 200
+  register: jdata
+  
+- name: Save artifacts
+  set_fact:
+    extra_vars: "{{ extra_vars | combine(jdata.artifacts) }}"
+  when: jdata.artifacts is defined
