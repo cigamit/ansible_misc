@@ -1,8 +1,0 @@
-- name: Prompt
-  pause:
-    prompt: "DNS Server"
-  register: dns_server
-
-- set_fact:
-    dns_server: "{{ dns_server.user_input }}"
-      
