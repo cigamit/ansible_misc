@@ -6,6 +6,9 @@
     extra_vars:
       test: "{{ test }}"
       app: "{{ app }}"
+    apps:
+      - Test1
+      - Test2
   tasks:
     - name: Call our job
       include_tasks: tasks/launch_job.yml
