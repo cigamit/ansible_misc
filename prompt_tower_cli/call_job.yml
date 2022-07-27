@@ -1,0 +1,10 @@
+- name: Test of vars prompt / Tower Survey
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - awx.awx.job_launch:
+        template: Set Stat
+        wait: yes
+      register: job
+      
