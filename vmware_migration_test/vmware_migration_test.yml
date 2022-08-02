@@ -7,7 +7,7 @@
     vCenterCluster: MNS
     vCenterFolder: /POC/
     vm_name: MigrationTest
-    vCenterCloneSource: CentOS8v
+    vCenterCloneSource: CentOS8
     VCenterCloneSnapshot: Linked
     vCenterPortGroup: Tower
     VMIpAddress: 10.0.110.250
