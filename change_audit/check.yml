@@ -2,6 +2,10 @@
 - name: Check previous job for change entries
   hosts: localhost
   gather_facts: no
+  vars:
+    tower_server: '{{ lookup("env", "TOWER_HOST") }}'
+    tower_username: '{{ lookup("env", "TOWER_USERNAME") }}'
+    tower_password: '{{ lookup("env", "TOWER_PASSWORD") }}'
   tasks:
 
     # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
