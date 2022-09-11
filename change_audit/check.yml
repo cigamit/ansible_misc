@@ -35,9 +35,6 @@
           - tower_workflow_job_id > 0
         fail_msg: "This playbook must be ran from a workflow within Controller"
 
-    - debug:
-        var: vars
-      
     # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
     # So we will use that to get the Template jobs that are associated with it
     - name: Get the Job ID for the first playbook run
@@ -53,10 +50,20 @@
           - 200
       register: response
 
+    - ansible.builtin.set_fact:
+        job_id: "{%- set job = namespace(v=false) -%}\
+                      {%- for c in response.json.results -%}\
+                        {%- if c.job != tower_job_id and c.summary_fields.job.status != "running" -%}\
+                          {%- set changed.job = c.job -%}\
+                        {%- endif -%}\
+                      {%- endfor -%}\
+                      {{- changed.job -}}"
+
+
     # Now that we have the Job ID of the first job of the workflow, we need to grab the job events to get the total number of changes
     - name: Get the Job Results for the first playbook run
       ansible.builtin.uri:
-        url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/?event=runner_on_ok&changed=true&page_size={{ page_size }}
+        url: https://{{ tower_server }}/api/v2/jobs/{{ job_id }}/job_events/?event=runner_on_ok&changed=true&page_size={{ page_size }}
         method: GET
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
