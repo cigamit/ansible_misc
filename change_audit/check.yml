@@ -59,7 +59,6 @@
                       {%- endfor -%}\
                       {{- job.job -}}"
 
-
     # Now that we have the Job ID of the first job of the workflow, we need to grab the job events to get the total number of changes
     - name: Get the Job Results for the first playbook run
       ansible.builtin.uri:
@@ -88,7 +87,7 @@
     # Set the total pages
     - name: Set Page Count
       ansible.builtin.set_fact:
-        pages: "{{ ((jdata.json.count/200)|int)+2 }}"
+        pages: "{{ ((jdata.json.count/200) | int | round(0, 'ceiling'))+1 }}"
 
     - debug:
         msg: "{{ (jdata.json.count/200)|int }}"
