@@ -1,6 +1,6 @@
 
 # We will now grab each page of the Job Events
-- name: Get the Job Results for the first playbook run
+- name: Get the events on page {{ page }}
   ansible.builtin.uri:
     url: https://{{ tower_server }}/api/v2/jobs/{{ job_id }}/job_events/?event=runner_on_ok&changed=true&page_size={{ page_size }}&page={{ page }}
     method: GET
