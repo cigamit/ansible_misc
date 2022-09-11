@@ -26,7 +26,6 @@
       run_once: true 
 
   tasks:
-
     # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
     - name: Precheck
       ansible.builtin.assert:
@@ -50,6 +49,7 @@
           - 200
       register: response
 
+    # Lets get the job ID of the 
     - ansible.builtin.set_fact:
         job_id: "{%- set job = namespace(job=false) -%}\
                       {%- for c in response.json.results -%}\
@@ -95,8 +95,11 @@
       ansible.builtin.set_fact:
         start: "{{ 1 if pages|int < max|int else ((pages|int) - (max|int)) }}"
 
+    - debug:
+        msg: "{{ range(start|int, pages|int) | list }}"
+
     - name: Loop over the job pages backwards
-      ansible.builtin.include_tasks: tasks/event_tasks.yml
+      include_tasks: tasks/event_tasks.yml
       loop: "{{ range(start|int, pages|int) | list }}"
       loop_control:
         loop_var: page
