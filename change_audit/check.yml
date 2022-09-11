@@ -11,21 +11,6 @@
 
   # We will be looping over multiple API pages, so its easiest to create individual reports per page, and then combine them together
   pre_tasks:
-    - name: Ensure Reports directories exist
-      ansible.builtin.file:
-         state: directory
-         path: "{{ playbook_dir }}/reports/fragments/"
-      delegate_to: localhost
-      run_once: true 
- 
-    - name: Ensure fragments directory is empty
-      ansible.builtin.file:
-         state: absent
-         path: "{{ playbook_dir }}/reports/fragments/*"
-      delegate_to: localhost
-      run_once: true 
-
-  tasks:
     # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
     - name: Precheck
       ansible.builtin.assert:
@@ -34,6 +19,23 @@
           - tower_workflow_job_id > 0
         fail_msg: "This playbook must be ran from a workflow within Controller"
 
+    # Lets start building out our temporary reports directories
+    - name: Ensure Reports directories exist
+      ansible.builtin.file:
+         state: directory
+         path: "{{ playbook_dir }}/reports/fragments/"
+      delegate_to: localhost
+      run_once: true 
+ 
+    # Lets clean up just in case (shouldn't need to EEs)
+    - name: Ensure fragments directory is empty
+      ansible.builtin.file:
+         state: absent
+         path: "{{ playbook_dir }}/reports/fragments/*"
+      delegate_to: localhost
+      run_once: true 
+
+  tasks:
     # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
     # So we will use that to get the Template jobs that are associated with it
     - name: Get the Job ID for the first playbook run
@@ -79,10 +81,11 @@
         msg: No Changes were detected
       when: jdata.json.count == 0
 
-    - meta: end_play
+    - name: End Play if no changes
+      ansible.builtin.meta: end_play
       when: jdata.json.count == 0
       
-    # From here, we only continue if a change was actually made on the previous playbook
+    ##### From here, we only continue if a change was actually made on the previous playbook #####
 
     # Set the total pages
     - name: Set Page Count
@@ -94,7 +97,7 @@
       ansible.builtin.set_fact:
         start: "{{ 1 if pages|int < max|int else ((pages|int) - (max|int)) }}"
 
-    - name: Loop over the job pages backwards
+    - name: Loop over the event pages backwards
       include_tasks: tasks/event_tasks.yml
       loop: "{{ range(start|int, pages|int) | list }}"
       loop_control:
