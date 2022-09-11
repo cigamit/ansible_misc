@@ -51,9 +51,9 @@
       register: response
 
     - ansible.builtin.set_fact:
-        job_id: "{%- set job = namespace(v=false) -%}\
+        job_id: "{%- set job = namespace(job=false) -%}\
                       {%- for c in response.json.results -%}\
-                        {%- if c.job != tower_job_id and c.summary_fields.job.status != "running" -%}\
+                        {%- if c.job != tower_job_id and c.summary_fields.job.status != 'running' -%}\
                           {%- set changed.job = c.job -%}\
                         {%- endif -%}\
                       {%- endfor -%}\
