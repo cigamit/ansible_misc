@@ -31,7 +31,7 @@
     # Now that we have the Job ID of the first job of the workflow, we need to grab the job events of that job
     - name: Get the Job Results for the first playbook run
       ansible.builtin.uri:
-        url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/?event=runner_on_ok
+        url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/?event=runner_on_ok&changed=true
         method: GET
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
