@@ -88,8 +88,11 @@
     # Set the total pages
     - name: Set Page Count
       ansible.builtin.set_fact:
-        pages: "{{ ((jdata.json.count/200)|int)+1 }}"
+        pages: "{{ ((jdata.json.count/200)|int)+2 }}"
 
+    - debug:
+        msg: "{{ (jdata.json.count/200)|int }}"
+        
     # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the newest data
     - name: Set Start Page Count
       ansible.builtin.set_fact:
