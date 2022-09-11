@@ -108,7 +108,8 @@
       run_once: true
  
     - name: Display Report
-      ansible.builtin.debug: var=item
+      ansible.builtin.debug:
+        var: item
       with_file:
           - "{{ playbook_dir }}/reports/changes.csv"
 
