@@ -53,9 +53,9 @@
 
     # Lets get the job ID of the other job
     - ansible.builtin.set_fact:
-        job_id: "{%- set job = namespace(job=false) -%}\
+        job_id: "{%- set job = namespace(job=0) -%}\
                  {%- for c in response.json.results -%}\
-                   {%- if c.job != tower_job_id and c.summary_fields.job.status != 'running' and c.summary_fields.job.type == 'job' -%}\
+                   {%- if c.job != tower_job_id and c.summary_fields.job.status != 'running' and c.summary_fields.job.type == 'job' and c.job > job.job -%}\
                      {%- set job.job = c.job -%}\
                    {%- endif -%}\
                  {%- endfor -%}\
