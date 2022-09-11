@@ -19,7 +19,7 @@
 # Workflow: https://{{ tower_server }}/#/jobs/workflow/{{ tower_workflow_job_id }}/output
 # Job:      https://{{ tower_server }}/#/jobs/playbook/{{ response.json.results[0].summary_fields.job.id }}/output
 # so they can more easily view the results
-- name: Create report of changes
+- name: Create report of changes on page {{ page }}
   ansible.builtin.template:
     src: templates/changes.csv.j2
     dest: "{{ playbook_dir }}/reports/fragments/page-{{ page }}.csv"
