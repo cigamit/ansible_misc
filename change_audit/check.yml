@@ -46,25 +46,14 @@
           - 200
       register: jdata
 
-    # Now that we have the Job Events, we will do a quick peek through them to see if we made any changes
-    # There is no reason to try and build a report if no changes where made
-    - ansible.builtin.set_fact:
-        job_changed: "{%- set changed = namespace(v=false) -%}\
-                      {%- for c in jdata.json.results -%}\
-                        {%- if c.event == 'runner_on_ok' and c.changed -%}\
-                          {%- set changed.v = true -%}\
-                        {%- endif -%}\
-                      {%- endfor -%}\
-                      {{- changed.v -}}"
-
     # Display a quick message if we didn't detect any changes.  That way they aren't wondering if the job
     # didn't complete, etc.. 
     - ansible.builtin.debug: 
         msg: No Changes were detected
-      when: not job_changed
+      when: jdata.json.count == 0
 
     # From here, we only continue if a change was actually made on the previous playbook
-    - when: job_changed
+    - when: jdata.json.count > 0
       block:
 
       # While I am creating a CSV file, it seems like it would be better to create an HTML file as
