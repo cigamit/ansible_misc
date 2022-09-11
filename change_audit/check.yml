@@ -54,10 +54,10 @@
         job_id: "{%- set job = namespace(job=false) -%}\
                       {%- for c in response.json.results -%}\
                         {%- if c.job != tower_job_id and c.summary_fields.job.status != 'running' -%}\
-                          {%- set changed.job = c.job -%}\
+                          {%- set job.job = c.job -%}\
                         {%- endif -%}\
                       {%- endfor -%}\
-                      {{- changed.job -}}"
+                      {{- job.job -}}"
 
 
     # Now that we have the Job ID of the first job of the workflow, we need to grab the job events to get the total number of changes
