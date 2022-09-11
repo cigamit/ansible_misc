@@ -7,5 +7,3 @@ For instance, if you have a security hardening playbook, you can place the harde
 ## Credentials
 This playbook is currently set to utilize an AAP Controller Credential to access the AAP API.
 
-## ToDo
-It currently only looks at changed tasks, but it doesn't take into account pagination.  So we will want to create a loop if there are over 200 changes in the Job.
