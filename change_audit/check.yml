@@ -7,7 +7,7 @@
     tower_username: '{{ lookup("env", "TOWER_USERNAME") }}'
     tower_password: '{{ lookup("env", "TOWER_PASSWORD") }}'
     max: 50
-    page_size: 200
+    page_size: 1
 
   # We will be looping over multiple API pages, so its easiest to create individual reports per page, and then combine them together
   pre_tasks:
