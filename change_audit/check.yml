@@ -87,7 +87,7 @@
     # Set the total pages
     - name: Set Page Count
       ansible.builtin.set_fact:
-        pages: "{{ ((jdata.json.count/200) | int | round(0, 'ceiling'))+1 }}"
+        pages: "{{ ((jdata.json.count/200) | int | round(0, 'ceil'))+1 }}"
 
     - debug:
         msg: "{{ (jdata.json.count/200)|int }}"
