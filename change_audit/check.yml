@@ -6,6 +6,25 @@
     tower_server: '{{ lookup("env", "TOWER_HOST") }}'
     tower_username: '{{ lookup("env", "TOWER_USERNAME") }}'
     tower_password: '{{ lookup("env", "TOWER_PASSWORD") }}'
+    max: 50
+    page_size: 200
+
+  # We will be looping over multiple API pages, so its easiest to create individual reports per page, and then combine them together
+  pre_tasks:
+    - name: Ensure Reports directories exist
+      ansible.builtin.file:
+         state: directory
+         path: "{{ playbook_dir }}/reports/fragments/"
+      delegate_to: localhost
+      run_once: true 
+ 
+    - name: Ensure fragments directory is empty
+      ansible.builtin.file:
+         state: absent
+         path: "{{ playbook_dir }}/reports/fragments/*"
+      delegate_to: localhost
+      run_once: true 
+
   tasks:
 
     # Lets first check if we have the proper variable to ensure we are not running from command line or outside a workflow
@@ -32,10 +51,10 @@
           - 200
       register: response
 
-    # Now that we have the Job ID of the first job of the workflow, we need to grab the job events of that job
+    # Now that we have the Job ID of the first job of the workflow, we need to grab the job events to get the total number of changes
     - name: Get the Job Results for the first playbook run
       ansible.builtin.uri:
-        url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/?event=runner_on_ok&changed=true&page_size=200
+        url: https://{{ tower_server }}/api/v2/jobs/{{ response.json.results[0].summary_fields.job.id }}/job_events/?event=runner_on_ok&changed=true&page_size={{ page_size }}
         method: GET
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
@@ -56,19 +75,41 @@
     - when: jdata.json.count > 0
       block:
 
-      # While I am creating a CSV file, it seems like it would be better to create an HTML file as
-      # we can get more creative with the DIFF display if they have it turned on
-      # you can also add in a URL link back to the actual job run by using
-      # Workflow: https://{{ tower_server }}/#/jobs/workflow/{{ tower_workflow_job_id }}/output
-      # Job:      https://{{ tower_server }}/#/jobs/playbook/{{ response.json.results[0].summary_fields.job.id }}/output
-      # so they can more easily view the results
-      - name: Create report of changes
-        ansible.builtin.template:
-          src: templates/changes.csv.j2
-          dest: changes.csv 
+      # Set the total pages
+      - name: Set Page Count
+        ansible.builtin.set_fact:
+          pages: "{{ ((aap_jobs_count.json.count/200)|int)+1 }}"
 
-      - name: Display the Results
-        ansible.builtin.debug:
-          msg: "{{ lookup('file', 'changes.csv') }}"
+      # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the oldest data
+      - name: Set Start Page Count
+        ansible.builtin.set_fact:
+          start: "{{ 1 if pages < max else ((pages|int) - (max|int)) }}"
+
+      - name: Loop over the job pages backwards
+        ansible.builtin.include_tasks: tasks/event_tasks.yml
+        loop: "{{ range(start|int, pages|int) | list }}"
+        loop_control:
+          loop_var: page
+
+  post_tasks:
+    - name: Concat all the csv files 
+      ansible.builtin.assemble: 
+        src: "{{ playbook_dir }}/reports/fragments/"
+        dest: "{{ playbook_dir }}/reports/changes.csv"
+      delegate_to: localhost
+      run_once: true 
+ 
+    - name: Append the header to the csv file 
+      ansible.builtin.lineinfile: 
+        dest: "{{ playbook_dir }}/reports/changes.csv"
+        insertbefore: BOF 
+        line: "Server,Playbook,Task,Module,Change" 
+      delegate_to: localhost
+      run_once: true
+ 
+    - name: Display Report
+      ansible.builtin.debug: var=item
+      with_file:
+          - "{{ playbook_dir }}/reports/changes.csv"
 
       # From here you can add more data to the template and email it out etc...
