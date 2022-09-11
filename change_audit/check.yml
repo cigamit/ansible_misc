@@ -78,7 +78,7 @@
       # Set the total pages
       - name: Set Page Count
         ansible.builtin.set_fact:
-          pages: "{{ ((aap_jobs_count.json.count/200)|int)+1 }}"
+          pages: "{{ ((jdata.json.count/200)|int)+1 }}"
 
       # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the oldest data
       - name: Set Start Page Count
