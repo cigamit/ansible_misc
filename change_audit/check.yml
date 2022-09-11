@@ -80,32 +80,32 @@
         msg: No Changes were detected
       when: jdata.json.count == 0
 
+    - meta: end_play
+      when: jdata.json.count == 0
+      
     # From here, we only continue if a change was actually made on the previous playbook
-    - when: jdata.json.count > 0
-      block:
 
-      # Set the total pages
-      - name: Set Page Count
-        ansible.builtin.set_fact:
-          pages: "{{ ((jdata.json.count/200)|int)+1 }}"
+    # Set the total pages
+    - name: Set Page Count
+      ansible.builtin.set_fact:
+        pages: "{{ ((jdata.json.count/200)|int)+1 }}"
 
-      # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the newest data
-      - name: Set Start Page Count
-        ansible.builtin.set_fact:
-          start: "{{ 1 if pages|int < max|int else ((pages|int) - (max|int)) }}"
+    # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the newest data
+    - name: Set Start Page Count
+      ansible.builtin.set_fact:
+        start: "{{ 1 if pages|int < max|int else ((pages|int) - (max|int)) }}"
 
-      - name: Loop over the job pages backwards
-        ansible.builtin.include_tasks: tasks/event_tasks.yml
-        loop: "{{ range(start|int, pages|int) | list }}"
-        loop_control:
-          loop_var: page
+    - name: Loop over the job pages backwards
+      ansible.builtin.include_tasks: tasks/event_tasks.yml
+      loop: "{{ range(start|int, pages|int) | list }}"
+      loop_control:
+        loop_var: page
 
   post_tasks:
     - name: Concat all the csv files 
       ansible.builtin.assemble: 
         src: "{{ playbook_dir }}/reports/fragments/"
         dest: "{{ playbook_dir }}/reports/changes.csv"
-      delegate_to: localhost
       run_once: true 
  
     - name: Append the header to the csv file 
@@ -113,7 +113,6 @@
         dest: "{{ playbook_dir }}/reports/changes.csv"
         insertbefore: BOF 
         line: "Server,Playbook,Task,Module,Change" 
-      delegate_to: localhost
       run_once: true
  
     - name: Display Report
