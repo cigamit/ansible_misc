@@ -83,7 +83,7 @@
       # We are limiting the number of pages we will pull, and since its sorted in reverse order, we will grab the oldest data
       - name: Set Start Page Count
         ansible.builtin.set_fact:
-          start: "{{ 1 if pages < max else ((pages|int) - (max|int)) }}"
+          start: "{{ 1 if pages|int < max|int else ((pages|int) - (max|int)) }}"
 
       - name: Loop over the job pages backwards
         ansible.builtin.include_tasks: tasks/event_tasks.yml
