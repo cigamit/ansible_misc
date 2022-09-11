@@ -35,7 +35,9 @@
           - tower_workflow_job_id > 0
         fail_msg: "This playbook must be ran from a workflow within Controller"
 
-
+    - debug:
+        var: vars
+      
     # We have the ID of the currently running workflow job via the variable 'tower_workflow_job_id'
     # So we will use that to get the Template jobs that are associated with it
     - name: Get the Job ID for the first playbook run
