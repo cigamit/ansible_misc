@@ -115,19 +115,33 @@
         dest: "{{ playbook_dir }}/reports/changes.html"
         insertbefore: BOF 
         line: "<html><body><table><tr><td>Server</td><td>Playbook</td><td>Task</td><td>Module</td><td>Change</td></tr>" 
-      run_once: true
       
     - name: Append the footer to the html file 
       ansible.builtin.lineinfile: 
         dest: "{{ playbook_dir }}/reports/changes.html"
         insertafter: EOF 
         line: "</table></body></html>" 
-      run_once: true
  
+    # For testing purposes, you will want to disable this later
     - name: Display Report
       ansible.builtin.debug:
         var: item
       with_file:
           - "{{ playbook_dir }}/reports/changes.html"
 
-      # From here you can add more data to the template and email it out etc...
+    # Send out the report
+    - name: Mail Report
+      mail:
+        host: "{{ smtp_server | default('127.0.0.1') }}"
+        port: "{{ smtp_port | default(25) }}"
+        subject: Change Report - {{ jdata.json.results[0].summary_fields.job.name }}
+        body: |
+              Attached is the change report for <b>{{ jdata.json.results[0].summary_fields.job.name }}</b><br><br>
+              <a href="https://{{ tower_server }}/#/jobs/workflow/{{ tower_workflow_job_id }}/output">Workflow</a><br>
+              <a href="https://{{ tower_server }}/#/jobs/playbook/{{ job_id }}/output">Job</a><br>
+        from: "{{ from_address }}"
+        to:
+          - "{{ to_address }}"
+        attach:
+          - "{{ playbook_dir }}/reports/changes.html"
+      ignore_errors: true
