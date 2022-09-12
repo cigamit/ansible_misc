@@ -1,6 +1,7 @@
 {% for c in events.json.results %}
 {% if c.event == "runner_on_ok" and c.changed %}
 <tr><td>{{c.host_name}}</td><td>{{ c.playbook }}</td><td>{{ c.task }}</td><td>{{ c.event_data.resolved_action }}</td><td><pre>
+{% if c.event_data.res.diff is defined %}
 {% for d in c.event_data.res.diff %}
 {% if d.before_header is defined %}
 {{ lookup('diff', before=d.before, after=d.after) | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n        ") }}
@@ -8,6 +9,7 @@
 {{ d | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n        ") }}
 {% endif %}
 {% endfor %}
+{% endif %}
 </pre></td></tr>
 {% endif %}
 
