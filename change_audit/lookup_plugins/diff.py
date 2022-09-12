@@ -179,11 +179,11 @@ class FactDiff(FactDiffBase):
                     elif diff[x] is None:
                         diff[x] = ''
                 if 'before_header' in diff:
-                    before_header = u"before: %s" % diff['before_header']
+                    before_header = u"before: %s" % diff['header']
                 else:
                     before_header = u'before'
                 if 'after_header' in diff:
-                    after_header = u"after: %s" % diff['after_header']
+                    after_header = u"after: %s" % diff['header']
                 else:
                     after_header = u'after'
                 before_lines = diff['before'].splitlines(True)
