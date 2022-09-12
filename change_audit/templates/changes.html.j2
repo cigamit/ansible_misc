@@ -4,7 +4,7 @@
 {% if c.event_data.res.diff is defined %}
 {% for d in c.event_data.res.diff %}
 {% if d.before_header is defined and d.before is defined %}
-{{ lookup('diff', before=d.before, after=d.after, header=d.before_header) | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n        ") }}
+{{ lookup('diff', before=d.before, after=d.after, header=d.before_header) | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n") }}
 {% else %}
 {{ d | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n        ") }}
 {% endif %}
