@@ -114,13 +114,13 @@
       ansible.builtin.lineinfile: 
         dest: "{{ playbook_dir }}/reports/changes.html"
         insertbefore: BOF 
-        line: "<html><body><table><tr><td>Server</td><td>Playbook</td><td>Task</td><td>Module</td><td>Change</td></tr>" 
+        line: "{{ lookup('ansible.builtin.file', 'templates/header.html') }}"
       
     - name: Append the footer to the html file 
       ansible.builtin.lineinfile: 
         dest: "{{ playbook_dir }}/reports/changes.html"
         insertafter: EOF 
-        line: "</table></body></html>" 
+        line: "{{ lookup('ansible.builtin.file', 'templates/footer.html') }}"
  
     # For testing purposes, you will want to disable this later
     - name: Display Report
