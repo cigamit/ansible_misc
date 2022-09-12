@@ -114,7 +114,7 @@
       ansible.builtin.lineinfile: 
         dest: "{{ playbook_dir }}/reports/changes.html"
         insertbefore: BOF 
-        line: "{{ lookup('ansible.builtin.template', 'templates/header.html.js') }}"
+        line: "{{ lookup('ansible.builtin.template', 'templates/header.html.j2') }}"
       
     - name: Append the footer to the html file 
       ansible.builtin.lineinfile: 
