@@ -77,7 +77,7 @@ class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         ret = []
         for term in terms:
-            display.debug("Lookup term: %s" % term)
+            ret.append("Lookup term: %s" % term)
         
         if isinstance(terms, list):
             keys = ["before", "after", "header"]
