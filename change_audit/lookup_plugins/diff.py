@@ -62,6 +62,17 @@ from ansible_collections.ansible.utils.plugins.module_utils.common.argspec_valid
 )
 
 class LookupModule(LookupBase):
+    def _debug(self, msg):
+        """Output text using ansible's display
+        :param msg: The message
+        :type msg: str
+        """
+        msg = "<{phost}> [fact_diff][{plugin}] {msg}".format(
+            phost=self._playhost,
+            plugin=self._plugin,
+            msg=msg,
+        )
+        self._display.vvvv(msg)
     def run(self, terms, variables, **kwargs):
         if isinstance(terms, list):
             keys = ["before", "after", "header"]
@@ -74,9 +85,9 @@ class LookupModule(LookupBase):
         if not valid:
             raise AnsibleLookupError(errors)
         updated_data["wantlist"] = False
-       
+        self.debug = True
         
-        diff = FactDiff(self);
+        diff = FactDiff(terms, variables, self.debug);
         res = diff.diff();
         
         return res
