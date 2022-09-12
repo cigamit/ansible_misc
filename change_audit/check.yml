@@ -131,7 +131,7 @@
 
     # Send out the report
     - name: Mail Report
-      mail:
+      community.general.mail:
         host: "{{ smtp_server | default('127.0.0.1') }}"
         port: "{{ smtp_port | default(25) }}"
         subject: Change Report - {{ jdata.json.results[0].summary_fields.job.name }}
