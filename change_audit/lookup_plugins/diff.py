@@ -71,16 +71,9 @@ from ansible.utils.color import stringc
 display = Display()
 
 class LookupModule(LookupBase):
-    def _debug(self, msg):
-        """Output text using ansible's display
-        :param msg: The message
-        :type msg: str
-        """
-        display.debug(msg);
-        self._display.vvvv(msg)
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
-        ret = []
+        res = []
 
         if isinstance(terms, list):
             keys = [
@@ -91,11 +84,7 @@ class LookupModule(LookupBase):
             terms = dict(zip(keys, terms))
         terms.update(kwargs)
 
-        for term in terms:
-            display.vvvv("Lookup term: %s" % term)
-
         self.debug = True
-        display.vvvv("Creating CLASS FactDiff");
         diff = FactDiff(terms, variables, self.debug);
 
         ret = diff.diff()
@@ -106,8 +95,8 @@ class LookupModule(LookupBase):
         #display.vvvv(res);
 
         #display.vvvv("DIFF: %s" % ret)
-
-        return ret
+        res.append(ret)
+        return res
 
     
 class FactDiffBase:
@@ -215,11 +204,14 @@ class FactDiff(FactDiffBase):
                 for line in difflines:
                     has_diff = True
                     if line.startswith(u'+'):
-                        line = stringc(line, C.COLOR_DIFF_ADD)
+#                        line = stringc(line, C.COLOR_DIFF_ADD)
+                        line = "<font color=green>" + line + "</font>"
                     elif line.startswith(u'-'):
-                        line = stringc(line, C.COLOR_DIFF_REMOVE)
+#                        line = stringc(line, C.COLOR_DIFF_REMOVE)
+                        line = "<font color=red>" + line + "</font>"
                     elif line.startswith(u'@@'):
-                        line = stringc(line, C.COLOR_DIFF_LINES)
+#                        line = stringc(line, C.COLOR_DIFF_LINES)
+                        line = "<font color=cyan>" + line + "</font>"
                     ret.append(line)
                 if has_diff:
                     ret.append('\n')
