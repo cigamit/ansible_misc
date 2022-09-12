@@ -123,11 +123,11 @@
         line: "{{ lookup('ansible.builtin.template', 'templates/footer.html.j2') }}"
  
     # For testing purposes, you will want to disable this later
-    - name: Display Report
-      ansible.builtin.debug:
-        var: item
-      with_file:
-          - "{{ playbook_dir }}/reports/changes.html"
+    #- name: Display Report
+    #  ansible.builtin.debug:
+    #    var: item
+    #  with_file:
+    #      - "{{ playbook_dir }}/reports/changes.html"
 
     # Send out the report
     - name: Mail Report
