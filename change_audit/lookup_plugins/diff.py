@@ -56,7 +56,7 @@ from importlib import import_module
 
 from ansible.plugins.callback import CallbackBase
 
-from ansible.errors import AnsibleLookupError
+from ansible.errors import AnsibleLookupError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 
@@ -75,6 +75,7 @@ class LookupModule(LookupBase):
         display.debug(msg);
         self._display.vvvv(msg)
     def run(self, terms, variables=None, **kwargs):
+        ret = []
         for term in terms:
             display.debug("Lookup term: %s" % term)
         
@@ -96,10 +97,10 @@ class LookupModule(LookupBase):
         #diff = FactDiff(terms, variables, self.debug);
         display.debug("GETTING DIFF");
         #res = diff.diff()
-        res = "TEST"
+        ret.append("TEST")
         display.debug("DIFF: %s" % res)
 
-        return res
+        return ret
 
     
 class FactDiffBase:
