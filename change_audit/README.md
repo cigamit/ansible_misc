@@ -17,3 +17,6 @@ smtp_port
 from_address
 to_address
 ```
+
+## Show Changes
+If you turn on "Show Changes" for the Job template that is making the changes, you will get a lot more detail in the output of the changes for the report.
