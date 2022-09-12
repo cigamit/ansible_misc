@@ -92,10 +92,11 @@ class LookupModule(LookupBase):
             raise AnsibleLookupError(errors)
         updated_data["wantlist"] = False
         self.debug = True
-        display.debug("Createing CLASS FactDiff");
-        diff = FactDiff(terms, variables, self.debug);
+        display.debug("Creating CLASS FactDiff");
+        #diff = FactDiff(terms, variables, self.debug);
         display.debug("GETTING DIFF");
-        res = diff.diff()
+        #res = diff.diff()
+        res = "TEST"
         display.debug("DIFF: %s" % res)
 
         return res
