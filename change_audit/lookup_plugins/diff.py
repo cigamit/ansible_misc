@@ -85,12 +85,12 @@ class LookupModule(LookupBase):
 
 
         
-        schema = [v for k, v in globals().items() if k.lower() == "documentation"]
-        aav = AnsibleArgSpecValidator(data=terms, schema=schema[0], name="diff")
-        valid, errors, updated_data = aav.validate()
-        if not valid:
-            raise AnsibleLookupError(errors)
-        updated_data["wantlist"] = False
+       # schema = [v for k, v in globals().items() if k.lower() == "documentation"]
+       # aav = AnsibleArgSpecValidator(data=terms, schema=schema[0], name="diff")
+       # valid, errors, updated_data = aav.validate()
+       # if not valid:
+       #     raise AnsibleLookupError(errors)
+       # updated_data["wantlist"] = False
         self.debug = True
         display.debug("Creating CLASS FactDiff");
         #diff = FactDiff(terms, variables, self.debug);
