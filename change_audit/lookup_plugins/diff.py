@@ -75,6 +75,7 @@ class LookupModule(LookupBase):
         display.debug(msg);
         self._display.vvvv(msg)
     def run(self, terms, variables=None, **kwargs):
+        self.set_options(var_options=variables, direct=kwargs)
         ret = []
         for term in terms:
             ret.append("Lookup term: %s" % term)
