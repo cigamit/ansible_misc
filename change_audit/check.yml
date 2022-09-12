@@ -119,7 +119,7 @@
       
     - name: Append the footer to the html file 
       ansible.builtin.lineinfile: 
-        dest: "{{ playbook_dir }}/reports/changes.csv"
+        dest: "{{ playbook_dir }}/reports/changes.html"
         insertafter: EOF 
         line: "</table></body></html>" 
       run_once: true
