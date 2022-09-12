@@ -8,3 +8,12 @@ As this is only an example playbook, I haven't added a task to mail the report o
 
 ## Credentials
 This playbook is currently set to utilize an AAP Controller Credential to access the AAP API.
+
+## Variables
+For email purposes, you will need to set these variables somewhere (I put it in the workflow extra vars, so I can change it per workflow)
+```
+smtp_server
+smtp_port
+from_address
+to_address
+```
