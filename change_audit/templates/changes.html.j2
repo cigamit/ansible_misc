@@ -7,8 +7,8 @@
 {% else %}
 {{ d | default("") | to_nice_yaml(width=1337) | replace ("\\n", "\n        ") }}
 {% endif %}
-
-{% endif %}
 {% endfor %}
 </pre></td></tr>
+{% endif %}
+
 {% endfor %}
