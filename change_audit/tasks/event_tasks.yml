@@ -13,13 +13,11 @@
       - 200
   register: events
 
-# While I am creating a CSV file, it seems like it would be better to create an HTML file as
-# we can get more creative with the DIFF display if they have it turned on
-# you can also add in a URL link back to the actual job run by using
+# You can also add in a URL link back to the actual job run by using
 # Workflow: https://{{ tower_server }}/#/jobs/workflow/{{ tower_workflow_job_id }}/output
 # Job:      https://{{ tower_server }}/#/jobs/playbook/{{ response.json.results[0].summary_fields.job.id }}/output
 # so they can more easily view the results
 - name: Create report of changes on page {{ page }}
   ansible.builtin.template:
-    src: templates/changes.csv.j2
-    dest: "{{ playbook_dir }}/reports/fragments/page-{{ page }}.csv"
+    src: templates/changes.html.j2
+    dest: "{{ playbook_dir }}/reports/fragments/page-{{ page }}.html"
