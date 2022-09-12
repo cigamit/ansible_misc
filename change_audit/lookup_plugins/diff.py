@@ -54,6 +54,8 @@ import re
 
 from importlib import import_module
 
+from ansible.plugins.callback import CallbackBase
+
 from ansible.errors import AnsibleLookupError
 from ansible.plugins.lookup import LookupBase
 
