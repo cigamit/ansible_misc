@@ -33,9 +33,8 @@ DOCUMENTATION = """
         required: True
       header:
         description:
-          - Header String
+          - The filename
         type: str
-
     notes:
 """
 
@@ -60,9 +59,14 @@ from ansible.errors import AnsibleLookupError, AnsibleParserError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 
-from ansible_collections.ansible.utils.plugins.module_utils.common.argspec_validate import (
-    AnsibleArgSpecValidator,
-)
+from collections.abc import MutableMapping
+import difflib
+from ansible import constants as C
+from ansible.utils.color import stringc
+
+#from ansible_collections.ansible.utils.plugins.module_utils.common.argspec_validate import (
+#    AnsibleArgSpecValidator,
+#)
 
 display = Display()
 
@@ -77,29 +81,31 @@ class LookupModule(LookupBase):
     def run(self, terms, variables=None, **kwargs):
         self.set_options(var_options=variables, direct=kwargs)
         ret = []
-        for term in terms:
-            ret.append("Lookup term: %s" % term)
-        
+
         if isinstance(terms, list):
-            keys = ["before", "after", "header"]
+            keys = [
+                "before",
+                "after",
+                "header",
+            ]
             terms = dict(zip(keys, terms))
         terms.update(kwargs)
 
+        for term in terms:
+            display.vvvv("Lookup term: %s" % term)
 
-        
-       # schema = [v for k, v in globals().items() if k.lower() == "documentation"]
-       # aav = AnsibleArgSpecValidator(data=terms, schema=schema[0], name="diff")
-       # valid, errors, updated_data = aav.validate()
-       # if not valid:
-       #     raise AnsibleLookupError(errors)
-       # updated_data["wantlist"] = False
         self.debug = True
-        display.debug("Creating CLASS FactDiff");
-        #diff = FactDiff(terms, variables, self.debug);
-        display.debug("GETTING DIFF");
-        #res = diff.diff()
-        ret.append("TEST")
-       # display.debug("DIFF: %s" % ret)
+        display.vvvv("Creating CLASS FactDiff");
+        diff = FactDiff(terms, variables, self.debug);
+
+        ret = diff.diff()
+        display.vvvv("------------------------------------")
+        display.vvvv(ret)
+        display.vvvv("------------------------------------")
+
+        #display.vvvv(res);
+
+        #display.vvvv("DIFF: %s" % ret)
 
         return ret
 
@@ -158,17 +164,96 @@ class FactDiff(FactDiffBase):
         if self._errors:
             return {"errors": " ".join(self._errors)}
         self._xform()
-        diff = CallbackBase()._get_diff({"before": self._before, "after": self._after})
-        return {"diff": diff}
+        diff = self._get_diff({"before": self._before, "after": self._after})
+        return diff
     
-    def _debug(self, msg):
-        """Output text using ansible's display
-        :param msg: The message
-        :type msg: str
-        """
-        msg = "<{phost}> [fact_diff][{plugin}] {msg}".format(
-            phost="host", #self._playhost,
-            plugin="diff", #self._plugin,
-            msg=msg,
-        )
-        self._display.vvv(msg)
+    def _get_diff(self, difflist):
+
+        if not isinstance(difflist, list):
+            difflist = [difflist]
+
+        ret = []
+        for diff in difflist:
+            if 'dst_binary' in diff:
+                ret.append(u"diff skipped: destination file appears to be binary\n")
+            if 'src_binary' in diff:
+                ret.append(u"diff skipped: source file appears to be binary\n")
+            if 'dst_larger' in diff:
+                ret.append(u"diff skipped: destination file size is greater than %d\n" % diff['dst_larger'])
+            if 'src_larger' in diff:
+                ret.append(u"diff skipped: source file size is greater than %d\n" % diff['src_larger'])
+            if 'before' in diff and 'after' in diff:
+                # format complex structures into 'files'
+                for x in ['before', 'after']:
+                    if isinstance(diff[x], MutableMapping):
+                        diff[x] = self._serialize_diff(diff[x])
+                    elif diff[x] is None:
+                        diff[x] = ''
+                if 'before_header' in diff:
+                    before_header = u"before: %s" % diff['before_header']
+                else:
+                    before_header = u'before'
+                if 'after_header' in diff:
+                    after_header = u"after: %s" % diff['after_header']
+                else:
+                    after_header = u'after'
+                before_lines = diff['before'].splitlines(True)
+                after_lines = diff['after'].splitlines(True)
+                if before_lines and not before_lines[-1].endswith(u'\n'):
+                    before_lines[-1] += u'\n\\ No newline at end of file\n'
+                if after_lines and not after_lines[-1].endswith('\n'):
+                    after_lines[-1] += u'\n\\ No newline at end of file\n'
+                differ = difflib.unified_diff(before_lines,
+                                              after_lines,
+                                              fromfile=before_header,
+                                              tofile=after_header,
+                                              fromfiledate=u'',
+                                              tofiledate=u'',
+                                              n=C.DIFF_CONTEXT)
+                difflines = list(differ)
+                has_diff = False
+                for line in difflines:
+                    has_diff = True
+                    if line.startswith(u'+'):
+                        line = stringc(line, C.COLOR_DIFF_ADD)
+                    elif line.startswith(u'-'):
+                        line = stringc(line, C.COLOR_DIFF_REMOVE)
+                    elif line.startswith(u'@@'):
+                        line = stringc(line, C.COLOR_DIFF_LINES)
+                    ret.append(line)
+                if has_diff:
+                    ret.append('\n')
+            if 'prepared' in diff:
+                ret.append(diff['prepared'])
+        return u''.join(ret)
+
+    def _serialize_diff(self, diff):
+        try:
+            result_format = self.get_option('result_format')
+        except KeyError:
+            # Callback does not declare result_format nor extend result_format_callback
+            result_format = 'json'
+
+        try:
+            pretty_results = self.get_option('pretty_results')
+        except KeyError:
+            # Callback does not declare pretty_results nor extend result_format_callback
+            pretty_results = None
+
+        if result_format == 'json':
+            return json.dumps(diff, sort_keys=True, indent=4, separators=(u',', u': ')) + u'\n'
+        elif result_format == 'yaml':
+            # None is a sentinel in this case that indicates default behavior
+            # default behavior for yaml is to prettify results
+            lossy = pretty_results in (None, True)
+            return '%s\n' % textwrap.indent(
+                yaml.dump(
+                    diff,
+                    allow_unicode=True,
+                    Dumper=_AnsibleCallbackDumper(lossy=lossy),
+                    default_flow_style=False,
+                    indent=4,
+                    # sort_keys=sort_keys  # This requires PyYAML>=5.1
+                ),
+                '    '
+            )
