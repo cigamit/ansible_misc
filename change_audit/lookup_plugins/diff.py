@@ -70,8 +70,8 @@ class LookupModule(LookupBase):
         :type msg: str
         """
         msg = "<{phost}> [fact_diff][{plugin}] {msg}".format(
-            phost=self._playhost,
-            plugin=self._plugin,
+            phost="host", #self._playhost,
+            plugin="diff", #self._plugin,
             msg=msg,
         )
         self._display.vvvv(msg)
@@ -90,9 +90,9 @@ class LookupModule(LookupBase):
         self.debug = True
         
         diff = FactDiff(terms, variables, self.debug);
-        res = diff.diff();
+        res = diff.diff()
         
-        return res
+        return res.diff
 
     
 class FactDiffBase:
@@ -151,3 +151,15 @@ class FactDiff(FactDiffBase):
         self._xform()
         diff = CallbackBase()._get_diff({"before": self._before, "after": self._after})
         return {"diff": diff}
+    
+    def _debug(self, msg):
+        """Output text using ansible's display
+        :param msg: The message
+        :type msg: str
+        """
+        msg = "<{phost}> [fact_diff][{plugin}] {msg}".format(
+            phost="host", #self._playhost,
+            plugin="diff", #self._plugin,
+            msg=msg,
+        )
+        self._display.vvv(msg)
