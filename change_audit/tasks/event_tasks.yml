@@ -15,7 +15,7 @@
 
 # You can also add in a URL link back to the actual job run by using
 # Workflow: https://{{ tower_server }}/#/jobs/workflow/{{ tower_workflow_job_id }}/output
-# Job:      https://{{ tower_server }}/#/jobs/playbook/{{ response.json.results[0].summary_fields.job.id }}/output
+# Job:      https://{{ tower_server }}/#/jobs/playbook/{{ job_id }}/output
 # so they can more easily view the results
 - name: Create report of changes on page {{ page }}
   ansible.builtin.template:
