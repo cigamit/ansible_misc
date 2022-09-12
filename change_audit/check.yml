@@ -144,4 +144,5 @@
           - "{{ to_address }}"
         attach:
           - "{{ playbook_dir }}/reports/changes.html"
+        subtype: html
       ignore_errors: true
