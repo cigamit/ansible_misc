@@ -92,7 +92,7 @@ class LookupModule(LookupBase):
         diff = FactDiff(terms, variables, self.debug);
         res = diff.diff()
         
-        return res.diff
+        return res
 
     
 class FactDiffBase:
