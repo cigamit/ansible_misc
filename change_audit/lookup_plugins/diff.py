@@ -58,10 +58,13 @@ from ansible.plugins.callback import CallbackBase
 
 from ansible.errors import AnsibleLookupError
 from ansible.plugins.lookup import LookupBase
+from ansible.utils.display import Display
 
 from ansible_collections.ansible.utils.plugins.module_utils.common.argspec_validate import (
     AnsibleArgSpecValidator,
 )
+
+display = Display()
 
 class LookupModule(LookupBase):
     def _debug(self, msg):
@@ -69,18 +72,19 @@ class LookupModule(LookupBase):
         :param msg: The message
         :type msg: str
         """
-        msg = "<{phost}> [fact_diff][{plugin}] {msg}".format(
-            phost="host", #self._playhost,
-            plugin="diff", #self._plugin,
-            msg=msg,
-        )
+        display.debug(msg);
         self._display.vvvv(msg)
-    def run(self, terms, variables, **kwargs):
+    def run(self, terms, variables=None, **kwargs):
+        for term in terms:
+            display.debug("Lookup term: %s" % term)
+        
         if isinstance(terms, list):
             keys = ["before", "after", "header"]
             terms = dict(zip(keys, terms))
         terms.update(kwargs)
 
+
+        
         schema = [v for k, v in globals().items() if k.lower() == "documentation"]
         aav = AnsibleArgSpecValidator(data=terms, schema=schema[0], name="diff")
         valid, errors, updated_data = aav.validate()
@@ -88,10 +92,12 @@ class LookupModule(LookupBase):
             raise AnsibleLookupError(errors)
         updated_data["wantlist"] = False
         self.debug = True
-        
+        display.debug("Createing CLASS FactDiff");
         diff = FactDiff(terms, variables, self.debug);
+        display.debug("GETTING DIFF");
         res = diff.diff()
-        
+        display.debug("DIFF: %s" % res)
+
         return res
 
     
