@@ -98,7 +98,7 @@ class LookupModule(LookupBase):
         display.debug("GETTING DIFF");
         #res = diff.diff()
         ret.append("TEST")
-        display.debug("DIFF: %s" % res)
+       # display.debug("DIFF: %s" % ret)
 
         return ret
 
