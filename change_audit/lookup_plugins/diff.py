@@ -147,13 +147,14 @@ class FactDiff(FactDiffBase):
     def diff(self):
         self._after = self._task_args["after"]
         self._before = self._task_args["before"]
+        self._header = self._task_args["header"]
         self._errors = []
         self._skip_lines = False #self._task_args["plugin"]["vars"].get("skip_lines")
         self._check_valid_regexes()
         if self._errors:
             return {"errors": " ".join(self._errors)}
         self._xform()
-        diff = self._get_diff({"before": self._before, "after": self._after})
+        diff = self._get_diff({"before": self._before, "after": self._after, "header": self._header})
         return diff
     
     def _get_diff(self, difflist):
@@ -178,11 +179,11 @@ class FactDiff(FactDiffBase):
                         diff[x] = self._serialize_diff(diff[x])
                     elif diff[x] is None:
                         diff[x] = ''
-                if 'before_header' in diff:
+                if 'header' in diff:
                     before_header = u"before: %s" % diff['header']
                 else:
                     before_header = u'before'
-                if 'after_header' in diff:
+                if 'header' in diff:
                     after_header = u"after: %s" % diff['header']
                 else:
                     after_header = u'after'
