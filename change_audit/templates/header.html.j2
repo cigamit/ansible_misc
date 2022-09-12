@@ -6,12 +6,8 @@
       table, th, td { border: 1px solid #ccc;  background-color: white;}
       th { background-color: #ccc; font-weight: bold; }
       td { padding: 10px; }
-      .center {
-        margin-left: auto;
-        margin-right: auto;
-      }
     </style>
   </head>
-	<body class="center"><br><h3>{{ jdata.json.results[0].summary_fields.job.name }}</h3><br><br>
+	<body><center><br><h3>{{ jdata.json.results[0].summary_fields.job.name }}</h3><br><br>
     <table>
       <tr><th>Server</th><th>Playbook</th><th>Task</th><th>Module</th><th>Change</th></tr>
