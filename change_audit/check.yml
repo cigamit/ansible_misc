@@ -2,6 +2,7 @@
 - name: Check previous job for change entries
   hosts: localhost
   gather_facts: no
+  connection: local
   vars:
     tower_server: '{{ lookup("env", "TOWER_HOST") }}'
     tower_username: '{{ lookup("env", "TOWER_USERNAME") }}'
