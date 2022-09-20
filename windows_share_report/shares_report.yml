@@ -44,12 +44,17 @@
       delegate_to: localhost
       run_once: true
  
-#    - name: Display Report
-#      debug: var=item
-#      with_file:
-#          - "{{ playbook_dir }}/reports/shares.csv"
- 
-    - name: Copy File to Servers
-      win_copy: 
-          src: "{{ playbook_dir }}/reports/shares.csv"
-          dest: c:\shares.csv
+    - name: Mail Report
+      community.general.mail:
+        host: "{{ smtp_server | default('127.0.0.1') }}"
+        port: "{{ smtp_port | default(25) }}"
+        subject: Windows Share Report
+        body: Here is the report of all Windows Shares
+        from: "{{ from_address }}"
+        to:
+          - "{{ to_address }}"
+        attach:
+          - "{{ playbook_dir }}/reports/shares.csv"
+      ignore_errors: true
+      delegate_to: localhost
+      run_once: true
