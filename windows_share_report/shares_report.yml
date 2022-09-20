@@ -3,14 +3,14 @@
  
   pre_tasks:
     - name: Ensure Reports directories exist
-      file:
+      ansible.builtin.file:
          state: directory
          path: "{{ playbook_dir }}/reports/fragments/"
       delegate_to: localhost
       run_once: true 
  
     - name: Ensure fragments directory is empty
-      file:
+      ansible.builtin.file:
          state: absent
          path: "{{ playbook_dir }}/reports/fragments/*"
       delegate_to: localhost
@@ -18,11 +18,11 @@
  
   tasks:
     - name: Powershell | Get-SMBShare
-      win_shell: Get-SMBShare | Select-Object -Property Name,ScopeName,Path,Description,CimSystemProperties | ConvertTo-JSON
+      ansible.windows.win_shell: Get-SMBShare | Select-Object -Property Name,ScopeName,Path,Description,CimSystemProperties | ConvertTo-JSON
       register: shares
 
     - name: include Permissions report
-      include_tasks: tasks/share_permissions.yml
+      ansible.builtin.include_tasks: tasks/share_permissions.yml
       loop: "{{ shares.stdout | from_json }}"
       loop_control:
         loop_var: share
@@ -30,14 +30,14 @@
 
   post_tasks:
     - name: Concat all the csv files 
-      assemble: 
+      ansible.builtin.assemble: 
         src: "{{ playbook_dir }}/reports/fragments/"
         dest: "{{ playbook_dir }}/reports/shares.csv"
       delegate_to: localhost
       run_once: true 
  
     - name: Append the header to the csv file 
-      lineinfile: 
+      ansible.builtin.lineinfile: 
         dest: "{{ playbook_dir }}/reports/shares.csv"
         insertbefore: BOF 
         line: "Hostname,Share_Name,Share_Value,FullSharePath,Share_Mapping,Share_Permissions,NTFS_Permissions,Description" 
