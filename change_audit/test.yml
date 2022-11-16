@@ -3,7 +3,7 @@
   gather_facts: no
   tasks:
 
-    - name: Touch a file
+    - name: Touch a file - TEST
       file:
         path: myfile.conf
         state: touch
