@@ -15,7 +15,7 @@
 
 - name: Setup some base variables
   ansible.builtin.set_fact:
-    base_ee: "{{ inc_vars.build_arg_defaults.EE_BASE_IMAGE }}"
+    base_ee: "{{ inc_vars.images.base_image.name }}"
     new_ee_ver: "{{ inc_vars.version }}"
 
 - name: Grab the list of EEs to ensure the correct EE exists
@@ -25,7 +25,7 @@
 
 - name: Install the required base EE if not already present
   when: ee_list.stdout_lines is not search((base_ee|split(':'))[0])
-  ansible.builtin.shell: "podman pull --creds={{ ee_username }}:{{ ee_password }} {{ inc_vars.build_arg_defaults.EE_BASE_IMAGE }}"
+  ansible.builtin.shell: "podman pull --creds={{ ee_username }}:{{ ee_password }} {{ inc_vars.images.base_image.name }}"
   no_log: true
 
 - name: Run the build on the selected new EE
