@@ -1,5 +1,6 @@
 collections:
   - name: awx.awx
+    version: 21.10.2
   - name: community.general
     version: 6.2.0
 #  - ansible.utils
