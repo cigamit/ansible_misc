@@ -1,8 +1,6 @@
 ---
 - name: Build / Push / Install Custom EEs
-  hosts: localhost
-  gather_facts: false
-  connection: local
+  hosts: all
   vars_files:
     - vars/ee.yml
   vars:
@@ -28,4 +26,3 @@
       loop_control:
         loop_var: ee
         label: "{{ ee }}"
-
