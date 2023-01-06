@@ -1,7 +1,8 @@
 ---
-- name: Build /Push / Install Custom EEs
-  hosts: all
+- name: Build / Push / Install Custom EEs
+  hosts: localhost
   gather_facts: false
+  connection: local
   vars_files:
     - vars/ee.yml
   vars:
@@ -12,7 +13,7 @@
     remote_path: /tmp
 
     # private automation hub host
-    pah_host: lab-aaphub.tiger.lab
+    #pah_host: lab-aaphub.tiger.lab
 
     # credential name used in AAP
     pah_cred: Automation Hub Container Registry
