@@ -45,7 +45,7 @@
 
 - name: Collect credentials
   uri:
-    url: "https://{{ inventory_hostname }}/api/v2/credentials/?name={{ pah_cred | replace(' ', '%20') }}"
+    url: "https://{{ aap_host }}/api/v2/credentials/?name={{ pah_cred | replace(' ', '%20') }}"
     user: "{{ ee_username }}"
     password: "{{ ee_password }}"
     method: GET
@@ -66,7 +66,7 @@
 
 - name: Collect EEs to check if it already exists
   uri:
-    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/?name={{ ee | replace(' ', '%20') }}"
+    url: "https://{{ aap_host }}/api/v2/execution_environments/?name={{ ee | replace(' ', '%20') }}"
     user: "{{ ee_username }}"
     password: "{{ ee_password }}"
     method: GET
@@ -88,7 +88,7 @@
 - name: Configure AAP for new EE
   when: new_ee_id is undefined
   uri:
-    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/"
+    url: "https://{{ aap_host }}/api/v2/execution_environments/"
     user: "{{ ee_username }}"
     password: "{{ ee_password }}"
     method: POST
@@ -113,7 +113,7 @@
 - name: If EE already exists on AAP, update version number
   when: new_ee_id is defined
   uri:
-    url: "https://{{ inventory_hostname }}/api/v2/execution_environments/{{ new_ee_id }}/"
+    url: "https://{{ aap_host }}/api/v2/execution_environments/{{ new_ee_id }}/"
     user: "{{ ee_username }}"
     password: "{{ ee_password }}"
     method: PUT
