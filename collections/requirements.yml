@@ -1,5 +1,6 @@
 collections:
-  - awx.awx
-  - community.general
+  - name: awx.awx
+  - name: community.general
+    version: *
 #  - ansible.utils
 
