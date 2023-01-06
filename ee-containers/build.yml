@@ -15,6 +15,10 @@
     # private automation hub host
     #pah_host: lab-aaphub.tiger.lab
 
+    # AAP host
+    #aap_host: lab-aapc1.tiger.lab
+
+
     # credential name used in AAP
     pah_cred: Automation Hub Container Registry
 
