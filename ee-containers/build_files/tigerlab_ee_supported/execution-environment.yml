@@ -15,7 +15,7 @@ dependencies:
 
 images:
   base_image:
-    name: jc-aap23-hub.tiger.lab/ee-supported-rhel8:latest
+    name: jc-aap23-hub.tiger.lab/ee-minimal-rhel8:latest
   builder_image:
     name: jc-aap23-hub.tiger.lab/ansible-builder-rhel8:latest
 #    signature_original_name: registry.redhat.io/ansible-automation-platform-21/ansible-builder-rhel8:latest
