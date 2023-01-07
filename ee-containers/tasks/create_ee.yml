@@ -26,7 +26,7 @@
 - name: Install the required base EE if not already present
   when: ee_list.stdout_lines is not search((base_ee|split(':'))[0])
   ansible.builtin.shell: "podman pull --creds={{ ee_username }}:{{ ee_password }} {{ inc_vars.images.base_image.name }}"
-  no_log: true
+  #no_log: true
 
 - name: Run the build on the selected new EE
   ansible.builtin.shell: "ansible-builder build --tag {{ ee }}"
