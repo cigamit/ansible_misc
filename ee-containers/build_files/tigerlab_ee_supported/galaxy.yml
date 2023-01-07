@@ -1,11 +1,12 @@
 ---
 collections:
   - name: community.vmware
+    version: 3.2.0
   - name: community.routeros
-    version: 2.0.0
+    version: 2.6.0
   - name: community.general
-    version: 4.4.0
+    version: 6.2.0
   - name: ansible.netcommon
-    version: 2.4.0
+    version: 4.1.0
   - name: ansible.utils
-    version: 2.4.2
+    version: 2.8.0
