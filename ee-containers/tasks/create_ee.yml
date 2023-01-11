@@ -1,23 +1,23 @@
 - name: Create remote directory
   ansible.builtin.file:
-    path: "{{ remote_path }}/{{ ee }}/"
+    path: "{{ remote_path }}/{{ ee.name }}/"
     state: directory
 
 - name: Copy the EE files
   ansible.builtin.copy:
-    src: "{{ playbook_dir }}/build_files/{{ ee }}/"
-    dest: "{{ remote_path }}/{{ ee }}/"
+    src: "{{ playbook_dir }}/build_files/{{ ee.name }}/"
+    dest: "{{ remote_path }}/{{ ee.name }}/"
 
 - name: Include the EE file as variables
   include_vars:
-    file: "{{ path_ee }}/{{ ee }}/execution-environment.yml"
+    file: "{{ path_ee }}/{{ ee.name }}/execution-environment.yml"
     name: inc_vars
 
 - name: Setup some base variables
   ansible.builtin.set_fact:
     base_ee: "{{ inc_vars.images.base_image.name }}"
 #    base_ee: "{{ inc_vars.build_arg_defaults.EE_BASE_IMAGE }}"
-    new_ee_ver: "{{ inc_vars.version }}"
+    new_ee_ver: "{{ ee.version }}"
 
 - name: Grab the list of EEs to ensure the correct EE exists
   ansible.builtin.shell: podman image list
@@ -31,16 +31,16 @@
   #no_log: true
 
 - name: Run the build on the selected new EE
-  ansible.builtin.shell: "ansible-builder build --tag {{ ee }}"
+  ansible.builtin.shell: "ansible-builder build --tag {{ ee.name }}"
   args:
-    chdir: "{{ remote_path }}/{{ ee }}"
+    chdir: "{{ remote_path }}/{{ ee.name }}"
   register: ee_build_out
   failed_when: ee_build_out.stdout_lines is not search('Complete!')
 
 - name: Push EE to container registry
-  ansible.builtin.shell: "podman push --creds={{ ee_username }}:{{ ee_password }} localhost/{{ ee }}:latest docker://{{ pah_host }}/{{ ee }}:{{ new_ee_ver }} --tls-verify=false"
+  ansible.builtin.shell: "podman push --creds={{ ee_username }}:{{ ee_password }} localhost/{{ ee.name }}:latest docker://{{ pah_host }}/{{ ee.name }}:{{ new_ee_ver }} --tls-verify=false"
   args:
-    chdir: "{{ remote_path }}/{{ ee }}"
+    chdir: "{{ remote_path }}/{{ ee.name }}"
   register: pah_push_out
   no_log: true
   failed_when: pah_push_out.stderr_lines is not search('Storing signatures')
@@ -68,7 +68,7 @@
 
 - name: Collect EEs to check if it already exists
   uri:
-    url: "https://{{ aap_host }}/api/v2/execution_environments/?name={{ ee | replace(' ', '%20') }}"
+    url: "https://{{ aap_host }}/api/v2/execution_environments/?name={{ ee.name | replace(' ', '%20') }}"
     user: "{{ ee_username }}"
     password: "{{ ee_password }}"
     method: GET
@@ -82,7 +82,7 @@
   register: aap_ee_out
 
 - name: Set ansible ee id if name already exists
-  when: item.name == ee
+  when: item.name == ee.name
   ansible.builtin.set_fact:
     new_ee_id: "{{ item.id }}"
   loop: "{{ aap_ee_out.json.results }}"
@@ -99,8 +99,8 @@
     body_format: json
     body: |
         {
-            "name": "{{ ee }}",
-            "image": "{{ pah_host }}/{{ ee }}:{{ new_ee_ver }}",
+            "name": "{{ ee.name }}",
+            "image": "{{ pah_host }}/{{ ee.name }}:{{ new_ee_ver }}",
             "description": "added by automation",
             "pull": "missing",
             "credential": "{{ pah_cred_id }}"
@@ -124,8 +124,8 @@
     body_format: json
     body: |
         {
-            "name": "{{ ee }}",
-            "image": "{{ pah_host }}/{{ ee }}:{{ new_ee_ver }}",
+            "name": "{{ ee.name }}",
+            "image": "{{ pah_host }}/{{ ee.name }}:{{ new_ee_ver }}",
             "description": "added by automation",
             "pull": "missing",
             "credential": "{{ pah_cred_id }}"
