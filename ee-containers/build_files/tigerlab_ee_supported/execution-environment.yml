@@ -12,6 +12,7 @@ version: 2
 dependencies:
   galaxy: galaxy.yml
   python: python.txt
+  system: bindep.txt
 
 images:
   base_image:
