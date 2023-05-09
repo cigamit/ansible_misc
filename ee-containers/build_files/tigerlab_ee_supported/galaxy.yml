@@ -5,7 +5,7 @@ collections:
   - name: community.routeros
     version: 2.6.0
   - name: community.general
-    version: 6.2.0
+    version: 6.5.0
   - name: ansible.netcommon
     version: 4.1.0
   - name: ansible.utils
