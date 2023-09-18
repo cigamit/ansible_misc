@@ -1,5 +1,5 @@
 {% for r in report_packages %}
-{% if ansible_facts.packages[r] %}
+{% if r in ansible_facts.packages %}
 {{ inventory_hostname }},{{ r }},Yes,{{ packages[r].version }}
 {% else %}
 {{ inventory_hostname }},{{ r }},No,
