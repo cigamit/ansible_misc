@@ -1,0 +1,7 @@
+{% for r in report_packages %}
+{% if packages[r] %}
+{{ inventory_hostname }},{{ r }},Yes,{{ packages[r].version }}
+{% else %}
+{{ inventory_hostname }},{{ r }},No,
+{% endif %}
+{% endfor %}
