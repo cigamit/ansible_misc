@@ -1,9 +1,10 @@
 - name: Create Packages Report
   hosts: all
-  report_packages:
-    - kernel
-    - httpd
-    - nginx
+  vars:
+    report_packages:
+      - kernel
+      - httpd
+      - nginx
  
   pre_tasks:
     - name: Ensure Reports directories exist
