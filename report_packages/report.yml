@@ -29,7 +29,7 @@
     - name: Render the Host Report Template
       ansible.builtin.template: 
         src: "templates/packages.csv.j2" 
-        dest: "{{ playbook_dir }}/reports/fragments/{{ inventory_hostname }}-{{ packages }}.csv"
+        dest: "{{ playbook_dir }}/reports/fragments/{{ inventory_hostname }}-packages.csv"
       delegate_to: localhost
 
   post_tasks:
