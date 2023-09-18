@@ -1,0 +1,63 @@
+- name: Create Packages Report
+  hosts: all
+  report_packages:
+    - kernel
+    - httpd
+    - nginx
+ 
+  pre_tasks:
+    - name: Ensure Reports directories exist
+      ansible.builtin.file:
+         state: directory
+         path: "{{ playbook_dir }}/reports/fragments/"
+      delegate_to: localhost
+      run_once: true 
+ 
+    - name: Ensure fragments directory is empty
+      ansible.builtin.file:
+         state: absent
+         path: "{{ playbook_dir }}/reports/fragments/*"
+      delegate_to: localhost
+      run_once: true 
+
+  tasks:
+    - name: Get Packages
+      ansible.builtin.package_facts:
+      register: packages
+
+    - name: Render the Host Report Template
+      ansible.builtin.template: 
+        src: "templates/packages.csv.j2" 
+        dest: "{{ playbook_dir }}/reports/fragments/{{ inventory_hostname }}-{{ packages }}.csv"
+      delegate_to: localhost
+
+  post_tasks:
+    - name: Concat all the csv files 
+      ansible.builtin.assemble: 
+        src: "{{ playbook_dir }}/reports/fragments/"
+        dest: "{{ playbook_dir }}/reports/packages.csv"
+      delegate_to: localhost
+      run_once: true 
+
+    - name: Append the header to the csv file 
+      ansible.builtin.lineinfile: 
+        dest: "{{ playbook_dir }}/reports/packages.csv"
+        insertbefore: BOF 
+        line: "Hostname,Package,Installed,Version" 
+      delegate_to: localhost
+      run_once: true
+
+    - name: Mail Report
+      community.general.mail:
+        host: "{{ smtp_server | default('127.0.0.1') }}"
+        port: "{{ smtp_port | default(25) }}"
+        subject: Packages Report
+        body: Here is the report of the required Packages
+        from: "{{ from_address }}"
+        to:
+          - "{{ to_address }}"
+        attach:
+          - "{{ playbook_dir }}/reports/packages.csv"
+      ignore_errors: true
+      delegate_to: localhost
+      run_once: true
