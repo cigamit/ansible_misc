@@ -23,6 +23,13 @@
       retries: 100
       delay: 0
 
+#    - debug:
+#        msg: "{{ platform }}"
+#      tags: [print_action]
+
+    - set_fact:
+        k8s_platform: "{{ platforms[platform.user_input | int - 1] }}"
+
     - name: "\nSelect the number of the prototol you want to support. Selecting 'https' requires the SSL certificate being present:"
       pause:
         prompt: |
@@ -34,3 +41,10 @@
       until: lb_protocol.user_input|default('') in lookup('sequence', 'end=' + (lb_protocols | count | string) + ' start=1')
       retries: 100
       delay: 0
+
+    - set_fact:
+        k8s_lb_protocol: "{{ lb_protocols[lb_protocol.user_input | int - 1] }}"
+
+    - template:
+        src: templates/custom.config.yml.j2
+        dest: custom.config.yml
