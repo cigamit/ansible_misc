@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    platforms:
+      - k3s
+      - eks
+      - dkp
+    lb_protocols:
+      - http
+      - https
+
+  tasks:
+    - name: "\nSelect the number of the Kubernetes platform you are using to install Ascender:"
+      pause:
+        prompt: |
+          {% for a in platforms %}
+          {{ loop.index0 + 1}} - {{ a }}
+          {% endfor -%}
+          Enter your selection
+      register: platform
+      until: platform.user_input|default('') in lookup('sequence', 'end=' + (platforms | count | string) + ' start=1')
+      retries: 100
+      delay: 0
+
+    - name: "\nSelect the number of the prototol you want to support. Selecting 'https' requires the SSL certificate being present:"
+      pause:
+        prompt: |
+          {% for a in lb_protocols %}
+          {{ loop.index0 + 1 }} - {{ a }}
+          {% endfor -%}
+          Enter your selection
+      register: lb_protocol
+      until: lb_protocol.user_input|default('') in lookup('sequence', 'end=' + (lb_protocols | count | string) + ' start=1')
+      retries: 100
+      delay: 0
